@@ -1,0 +1,5239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Movement & Weight Tracker</title>
+
+<style>
+:root {
+  --navy:#153940;
+  --navy2:#0f2d33;
+  --green:#2f705b;
+  --green2:#478871;
+  --ocean:#337f92;
+  --cream:#f7f3ec;
+  --white:#fff;
+  --text:#193235;
+  --muted:#687b7d;
+  --border:#dbe5e2;
+  --sage:#e1eee5;
+  --blue:#e0f0f4;
+  --soft:#f5f8f7;
+  --danger:#9a4949;
+  --dangerBg:#faeaea;
+  --warning:#7d541d;
+  --warningBg:#fff1d6;
+  --shadow:0 8px 26px rgba(20,55,62,.08);
+  --radius:20px;
+}
+
+* { box-sizing:border-box; }
+
+body {
+  margin:0;
+  background:var(--cream);
+  color:var(--text);
+  font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+
+button,input,textarea,select { font:inherit; }
+button { cursor:pointer; }
+
+.app {
+  min-height:100vh;
+  padding-bottom:96px;
+}
+
+header {
+  padding:28px 20px 42px;
+  background:linear-gradient(135deg,var(--navy2),#1a6070,var(--green));
+  color:white;
+}
+
+.header-inner {
+  width:min(1080px,100%);
+  margin:auto;
+}
+
+.eyebrow {
+  margin:0 0 5px;
+  opacity:.75;
+  font-size:.76rem;
+  font-weight:800;
+  letter-spacing:.11em;
+  text-transform:uppercase;
+}
+
+h1 {
+  margin:0;
+  font-size:clamp(1.8rem,6vw,2.7rem);
+  letter-spacing:-.04em;
+}
+
+.header-pills {
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:17px;
+}
+
+.pill {
+  padding:8px 12px;
+  border:1px solid rgba(255,255,255,.22);
+  border-radius:999px;
+  background:rgba(255,255,255,.1);
+  font-size:.82rem;
+}
+
+.header-actions {
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:12px;
+}
+
+.header-button {
+  border:1px solid rgba(255,255,255,.25);
+  background:rgba(255,255,255,.09);
+  color:white;
+  border-radius:10px;
+  padding:8px 11px;
+  font-size:.78rem;
+  font-weight:750;
+}
+
+main {
+  width:min(1080px,calc(100% - 28px));
+  margin:-18px auto 0;
+}
+
+.view { display:none; }
+.view.active { display:block; }
+
+.card {
+  background:var(--white);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+}
+
+.section {
+  padding:20px;
+  margin-bottom:16px;
+}
+
+.page-title {
+  margin:5px 2px 18px;
+}
+
+.page-title h2 {
+  margin:0 0 5px;
+  font-size:1.6rem;
+}
+
+.page-title p {
+  margin:0;
+  color:var(--muted);
+  line-height:1.5;
+}
+
+.privacy-warning {
+  padding:15px 17px;
+  margin-bottom:16px;
+  border-radius:15px;
+  font-size:.86rem;
+  line-height:1.5;
+}
+
+.privacy-warning.private {
+  background:var(--sage);
+  border:1px solid #c8decf;
+  color:#315b4b;
+}
+
+.privacy-warning.public {
+  background:var(--dangerBg);
+  border:1px solid #e7bebe;
+  color:#7d3030;
+}
+
+.privacy-warning strong {
+  display:block;
+  margin-bottom:4px;
+}
+
+.hero {
+  padding:22px;
+  margin-bottom:16px;
+}
+
+.hero-top {
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:15px;
+}
+
+.hero-label,
+.stat-label {
+  color:var(--muted);
+  font-size:.74rem;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+}
+
+.weight-number {
+  margin:5px 0;
+  font-size:clamp(2.6rem,10vw,4rem);
+  font-weight:900;
+  line-height:1;
+  letter-spacing:-.06em;
+}
+
+.weight-number small {
+  font-size:1rem;
+  color:var(--muted);
+  letter-spacing:0;
+}
+
+.goal-chip {
+  padding:8px 11px;
+  background:var(--sage);
+  color:var(--green);
+  border-radius:999px;
+  font-size:.78rem;
+  font-weight:800;
+}
+
+.progress-track {
+  height:13px;
+  margin-top:18px;
+  background:#e8efed;
+  border-radius:999px;
+  overflow:hidden;
+}
+
+.progress-fill {
+  height:100%;
+  width:0;
+  background:linear-gradient(90deg,var(--ocean),var(--green2));
+  border-radius:inherit;
+  transition:.3s;
+}
+
+.progress-caption {
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  margin-top:8px;
+  color:var(--muted);
+  font-size:.79rem;
+}
+
+.stats {
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:11px;
+  margin-bottom:16px;
+}
+
+.stat {
+  padding:17px;
+  min-height:120px;
+}
+
+.stat-value {
+  margin:10px 0 5px;
+  font-size:1.65rem;
+  line-height:1;
+  font-weight:900;
+  letter-spacing:-.04em;
+}
+
+.stat-note {
+  color:var(--muted);
+  font-size:.78rem;
+  line-height:1.4;
+}
+
+.notice {
+  padding:16px;
+  margin-bottom:16px;
+  border-radius:16px;
+  background:var(--sage);
+  border:1px solid #cde1d2;
+  color:#335c4d;
+  font-size:.87rem;
+  line-height:1.5;
+}
+
+.section-title {
+  margin:0;
+  font-size:1.2rem;
+}
+
+.section-text {
+  margin:5px 0 17px;
+  color:var(--muted);
+  font-size:.87rem;
+  line-height:1.5;
+}
+
+.chart-wrap {
+  width:100%;
+  overflow-x:auto;
+}
+
+#weightChart {
+  display:block;
+  width:100%;
+  min-width:620px;
+  height:auto;
+}
+
+.routine {
+  display:grid;
+  gap:10px;
+}
+
+.routine-row {
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  padding:14px;
+  background:var(--soft);
+  border-radius:13px;
+}
+
+.routine-row strong {
+  display:block;
+  margin-bottom:3px;
+}
+
+.routine-row span {
+  color:var(--muted);
+  font-size:.8rem;
+}
+
+.routine-status {
+  flex:0 0 auto;
+  font-size:.8rem;
+  font-weight:800;
+  color:var(--green);
+}
+
+.nutrition-summary {
+  display:grid;
+  gap:8px;
+}
+
+.nutrition-summary-row {
+  padding:12px 14px;
+  background:var(--soft);
+  border-radius:12px;
+  font-size:.85rem;
+}
+
+.nutrition-summary-row strong {
+  display:block;
+  margin-bottom:3px;
+}
+
+.nutrition-summary-row span {
+  color:var(--muted);
+}
+
+.form-grid {
+  display:grid;
+  gap:17px;
+}
+
+.field {
+  display:grid;
+  gap:7px;
+}
+
+.field label {
+  font-size:.85rem;
+  font-weight:800;
+}
+
+.field small {
+  color:var(--muted);
+  font-size:.75rem;
+  line-height:1.4;
+}
+
+input, textarea, select {
+  width:100%;
+  padding:13px 14px;
+  border:1px solid #cbd8d5;
+  border-radius:12px;
+  background:white;
+  color:var(--text);
+}
+
+input, select { min-height:48px; }
+
+textarea {
+  min-height:105px;
+  resize:vertical;
+}
+
+.effort-grid {
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:7px;
+}
+
+.effort-grid input {
+  position:absolute;
+  opacity:0;
+}
+
+.effort-grid label {
+  min-height:50px;
+  display:grid;
+  place-items:center;
+  border:1px solid #cbd8d5;
+  border-radius:11px;
+  cursor:pointer;
+}
+
+.effort-grid input:checked + label {
+  border:2px solid var(--ocean);
+  background:var(--blue);
+}
+
+.check-list {
+  display:grid;
+  gap:9px;
+}
+
+.check-item {
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  padding:12px;
+  background:var(--soft);
+  border-radius:12px;
+}
+
+.check-item input {
+  width:20px;
+  height:20px;
+  min-height:auto;
+  margin-top:1px;
+  flex:0 0 auto;
+}
+
+.actions {
+  display:flex;
+  gap:9px;
+  margin-top:20px;
+}
+
+.primary,
+.secondary,
+.delete {
+  min-height:46px;
+  padding:0 17px;
+  border-radius:12px;
+  font-weight:800;
+}
+
+.primary {
+  flex:1;
+  border:0;
+  background:var(--green);
+  color:white;
+}
+
+.secondary {
+  background:white;
+  color:var(--text);
+  border:1px solid #cbd8d5;
+}
+
+.delete {
+  border:0;
+  color:var(--danger);
+  background:var(--dangerBg);
+}
+
+.list {
+  display:grid;
+  gap:11px;
+  margin-top:16px;
+}
+
+.item {
+  padding:17px;
+}
+
+.item-top {
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+}
+
+.item-date {
+  color:var(--muted);
+  font-size:.78rem;
+}
+
+.item-title {
+  margin-top:3px;
+  font-size:1.12rem;
+  font-weight:850;
+}
+
+.item-badge {
+  flex:0 0 auto;
+  height:max-content;
+  padding:6px 9px;
+  background:var(--sage);
+  color:var(--green);
+  border-radius:999px;
+  font-size:.73rem;
+  font-weight:800;
+}
+
+.item-meta {
+  margin-top:10px;
+  color:var(--muted);
+  font-size:.8rem;
+}
+
+.item-notes {
+  margin:10px 0 0;
+  color:#425e61;
+  font-size:.86rem;
+  line-height:1.5;
+  white-space:pre-wrap;
+}
+
+.item-actions {
+  display:flex;
+  gap:8px;
+  margin-top:13px;
+}
+
+.small {
+  min-height:36px;
+  padding:0 12px;
+  border-radius:9px;
+  font-size:.76rem;
+  font-weight:800;
+}
+
+.tag-wrap {
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-top:10px;
+}
+
+.tag {
+  padding:6px 8px;
+  background:var(--soft);
+  border-radius:999px;
+  color:#4d6669;
+  font-size:.74rem;
+}
+
+.empty {
+  padding:30px 20px;
+  text-align:center;
+}
+
+.empty h3 { margin:0 0 6px; }
+
+.empty p {
+  margin:0;
+  color:var(--muted);
+}
+
+.goal-settings {
+  margin-top:20px;
+  padding-top:18px;
+  border-top:1px solid var(--border);
+}
+
+.bottom-nav {
+  position:fixed;
+  z-index:30;
+  left:50%;
+  bottom:12px;
+  transform:translateX(-50%);
+  width:min(600px,calc(100% - 22px));
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  padding:7px;
+  background:rgba(16,46,52,.97);
+  border-radius:22px;
+  box-shadow:0 10px 35px rgba(16,46,52,.24);
+}
+
+.nav {
+  min-height:57px;
+  padding:5px 2px;
+  border:0;
+  border-radius:16px;
+  background:transparent;
+  color:rgba(255,255,255,.62);
+  font-size:.69rem;
+  font-weight:750;
+}
+
+.nav span {
+  display:block;
+  margin-bottom:2px;
+  font-size:1.15rem;
+}
+
+.nav.active {
+  color:white;
+  background:rgba(255,255,255,.13);
+}
+
+.toast {
+  position:fixed;
+  z-index:200;
+  left:50%;
+  bottom:92px;
+  transform:translate(-50%,15px);
+  max-width:calc(100% - 30px);
+  padding:11px 16px;
+  color:white;
+  background:var(--navy2);
+  border-radius:999px;
+  opacity:0;
+  pointer-events:none;
+  transition:.2s;
+  font-size:.83rem;
+  text-align:center;
+}
+
+.toast.show {
+  opacity:1;
+  transform:translate(-50%,0);
+}
+
+/* modal */
+
+.modal-backdrop {
+  position:fixed;
+  z-index:500;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  background:rgba(6,25,29,.72);
+}
+
+.modal-backdrop.show {
+  display:flex;
+}
+
+.modal {
+  width:min(560px,100%);
+  max-height:calc(100vh - 40px);
+  overflow:auto;
+  padding:23px;
+  background:white;
+  border-radius:20px;
+  box-shadow:0 25px 70px rgba(0,0,0,.3);
+}
+
+.modal h2 {
+  margin:0 0 7px;
+}
+
+.modal > p {
+  margin:0 0 18px;
+  color:var(--muted);
+  line-height:1.5;
+}
+
+.security-box {
+  margin:0 0 18px;
+  padding:13px 14px;
+  background:var(--warningBg);
+  border:1px solid #e5c890;
+  border-radius:13px;
+  color:var(--warning);
+  font-size:.8rem;
+  line-height:1.5;
+}
+
+.modal-buttons {
+  display:flex;
+  gap:9px;
+  margin-top:20px;
+}
+
+.loading-overlay {
+  position:fixed;
+  z-index:400;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:rgba(247,243,236,.91);
+}
+
+.loading-overlay.show {
+  display:flex;
+}
+
+.loading-card {
+  padding:23px 27px;
+  background:white;
+  border-radius:17px;
+  box-shadow:var(--shadow);
+  text-align:center;
+}
+
+.loading-card strong {
+  display:block;
+  margin-bottom:5px;
+}
+
+.loading-card span {
+  color:var(--muted);
+  font-size:.83rem;
+}
+
+@media(min-width:700px) {
+  header {
+    padding-top:38px;
+    padding-bottom:50px;
+  }
+
+  .stats {
+    grid-template-columns:repeat(4,1fr);
+  }
+
+  .form-grid.two {
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .full {
+    grid-column:1/-1;
+  }
+
+  .two-col {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<header>
+  <div class="header-inner">
+
+    <p class="eyebrow">Movement, nutrition & weight</p>
+
+    <h1 id="headerTitle">Your progress dashboard</h1>
+
+    <div class="header-pills">
+      <div class="pill">Start · 84 kg</div>
+      <div class="pill" id="goalPill">Goal · 60 kg</div>
+      <div class="pill" id="targetDateHeader">Target · Feb 2027</div>
+      <div class="pill" id="syncStatus">GitHub · connecting…</div>
+    </div>
+
+    <div class="header-actions">
+
+      <button
+        class="header-button"
+        type="button"
+        id="reloadGithubButton"
+      >
+        Reload from GitHub
+      </button>
+
+      <button
+        class="header-button"
+        type="button"
+        id="githubSettingsButton"
+      >
+        GitHub settings
+      </button>
+
+    </div>
+
+  </div>
+</header>
+
+
+<main>
+
+<div
+  class="privacy-warning private"
+  id="privacyWarning"
+>
+  <strong>GitHub data privacy</strong>
+  If your data repository is public, the contents of
+  training-data.json are visible to anyone on the internet.
+</div>
+
+
+<!-- DASHBOARD -->
+
+<section class="view active" id="dashboardView">
+
+  <section class="card hero">
+
+    <div class="hero-top">
+
+      <div>
+
+        <div class="hero-label">
+          Current weight
+        </div>
+
+        <div class="weight-number">
+          <span id="currentWeight">84</span>
+          <small>kg</small>
+        </div>
+
+        <div
+          id="weightChangeText"
+          class="section-text"
+        >
+          Starting point
+        </div>
+
+      </div>
+
+      <div
+        class="goal-chip"
+        id="heroGoal"
+      >
+        Goal 60 kg
+      </div>
+
+    </div>
+
+
+    <div class="progress-track">
+
+      <div
+        class="progress-fill"
+        id="goalProgress"
+      ></div>
+
+    </div>
+
+
+    <div class="progress-caption">
+
+      <span>Start</span>
+
+      <span id="progressCaption">
+        0% toward goal
+      </span>
+
+      <span>Goal</span>
+
+    </div>
+
+  </section>
+
+
+  <section class="stats">
+
+    <article class="card stat">
+
+      <div class="stat-label">
+        Remaining
+      </div>
+
+      <div class="stat-value">
+        <span id="remainingWeight">24</span> kg
+      </div>
+
+      <div class="stat-note">
+        to selected target
+      </div>
+
+    </article>
+
+
+    <article class="card stat">
+
+      <div class="stat-label">
+        Workouts this week
+      </div>
+
+      <div class="stat-value">
+        <span id="weeklyWorkouts">0</span>/<span id="workoutGoal">2</span>
+      </div>
+
+      <div class="stat-note">
+        structured sessions
+      </div>
+
+    </article>
+
+
+    <article class="card stat">
+
+      <div class="stat-label">
+        Minutes this week
+      </div>
+
+      <div
+        class="stat-value"
+        id="weeklyMinutes"
+      >
+        0
+      </div>
+
+      <div class="stat-note">
+        logged movement
+      </div>
+
+    </article>
+
+
+    <article class="card stat">
+
+      <div class="stat-label">
+        Nutrition check-ins
+      </div>
+
+      <div
+        class="stat-value"
+        id="nutritionCheckins"
+      >
+        0
+      </div>
+
+      <div class="stat-note">
+        this week; no score
+      </div>
+
+    </article>
+
+  </section>
+
+
+  <div class="notice">
+    Your target date is a preference rather than a deadline.
+    The tracker does not convert missed workouts, weigh-ins,
+    or nutrition check-ins into extra exercise or food restriction.
+  </div>
+
+
+  <section class="card section">
+
+    <h2 class="section-title">
+      Your weekly routine
+    </h2>
+
+    <p class="section-text">
+      The default routine is one TRX / small-group session
+      and one Burn & Firm Pilates session each week.
+    </p>
+
+    <div class="routine">
+
+      <div class="routine-row">
+
+        <div>
+          <strong>TRX / small-group training</strong>
+          <span>1 session each week</span>
+        </div>
+
+        <div
+          class="routine-status"
+          id="trxStatus"
+        >
+          Not logged
+        </div>
+
+      </div>
+
+
+      <div class="routine-row">
+
+        <div>
+          <strong>Burn & Firm Pilates</strong>
+          <span>1 session each week</span>
+        </div>
+
+        <div
+          class="routine-status"
+          id="pilatesStatus"
+        >
+          Not logged
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <section class="card section">
+
+    <h2 class="section-title">
+      Weight trend
+    </h2>
+
+    <p class="section-text">
+      The chart uses weigh-ins only. It does not infer
+      weight change from workouts or nutrition check-ins.
+    </p>
+
+    <div class="chart-wrap">
+
+      <svg
+        id="weightChart"
+        viewBox="0 0 760 300"
+      ></svg>
+
+    </div>
+
+  </section>
+
+
+  <section class="card section">
+
+    <h2 class="section-title">
+      Recent nutrition pattern
+    </h2>
+
+    <p class="section-text">
+      Descriptive only. There is no nutrition score.
+    </p>
+
+    <div
+      class="nutrition-summary"
+      id="nutritionSummary"
+    ></div>
+
+  </section>
+
+</section>
+
+
+<!-- WORKOUT -->
+
+<section class="view" id="workoutView">
+
+  <div class="page-title">
+
+    <h2 id="workoutFormTitle">
+      Log a workout
+    </h2>
+
+    <p>
+      Saving, editing, or deleting a workout updates
+      training-data.json in GitHub.
+    </p>
+
+  </div>
+
+
+  <section class="card section">
+
+    <form id="workoutForm">
+
+      <div class="form-grid two">
+
+        <div class="field">
+
+          <label for="workoutDate">
+            Date
+          </label>
+
+          <input
+            id="workoutDate"
+            type="date"
+            required
+          >
+
+        </div>
+
+
+        <div class="field">
+
+          <label for="workoutType">
+            Workout
+          </label>
+
+          <select
+            id="workoutType"
+            required
+          >
+
+            <option value="">
+              Choose activity
+            </option>
+
+            <option>
+              TRX / small-group training
+            </option>
+
+            <option>
+              Burn & Firm Pilates
+            </option>
+
+            <option>Walking</option>
+            <option>Cardio</option>
+            <option>Strength training</option>
+            <option>Yoga</option>
+            <option>Other</option>
+
+          </select>
+
+        </div>
+
+
+        <div class="field">
+
+          <label for="duration">
+            Duration
+          </label>
+
+          <input
+            id="duration"
+            type="number"
+            min="1"
+            step="1"
+            required
+          >
+
+          <small>Minutes</small>
+
+        </div>
+
+
+        <div class="field">
+
+          <label>
+            Perceived effort
+          </label>
+
+          <div class="effort-grid">
+
+            <div>
+              <input
+                type="radio"
+                name="effort"
+                id="e1"
+                value="1"
+                required
+              >
+              <label for="e1">1</label>
+            </div>
+
+            <div>
+              <input
+                type="radio"
+                name="effort"
+                id="e2"
+                value="2"
+              >
+              <label for="e2">2</label>
+            </div>
+
+            <div>
+              <input
+                type="radio"
+                name="effort"
+                id="e3"
+                value="3"
+              >
+              <label for="e3">3</label>
+            </div>
+
+            <div>
+              <input
+                type="radio"
+                name="effort"
+                id="e4"
+                value="4"
+              >
+              <label for="e4">4</label>
+            </div>
+
+            <div>
+              <input
+                type="radio"
+                name="effort"
+                id="e5"
+                value="5"
+              >
+              <label for="e5">5</label>
+            </div>
+
+          </div>
+
+          <small>
+            1 = very easy · 5 = very hard
+          </small>
+
+        </div>
+
+
+        <div class="field full">
+
+          <label for="workoutNotes">
+            Notes
+          </label>
+
+          <textarea
+            id="workoutNotes"
+            placeholder="How did the workout feel?"
+          ></textarea>
+
+        </div>
+
+      </div>
+
+
+      <div class="actions">
+
+        <button
+          class="primary"
+          type="submit"
+          id="workoutSave"
+        >
+          Save workout
+        </button>
+
+        <button
+          class="secondary"
+          type="button"
+          id="cancelWorkoutEdit"
+          style="display:none"
+        >
+          Cancel
+        </button>
+
+      </div>
+
+    </form>
+
+  </section>
+
+
+  <div class="page-title">
+
+    <h2>
+      Workout history
+    </h2>
+
+  </div>
+
+  <div
+    class="list"
+    id="workoutHistory"
+  ></div>
+
+</section>
+
+
+<!-- NUTRITION -->
+
+<section class="view" id="nutritionView">
+
+  <div class="page-title">
+
+    <h2 id="nutritionFormTitle">
+      Nutrition check-in
+    </h2>
+
+    <p>
+      No calorie, macro, portion, or meal-by-meal tracking.
+    </p>
+
+  </div>
+
+
+  <section class="card section">
+
+    <form id="nutritionForm">
+
+      <div class="form-grid two">
+
+        <div class="field">
+
+          <label for="nutritionDate">
+            Date
+          </label>
+
+          <input
+            id="nutritionDate"
+            type="date"
+            required
+          >
+
+        </div>
+
+
+        <div class="field">
+
+          <label for="mealRhythm">
+            How did eating rhythm feel?
+          </label>
+
+          <select
+            id="mealRhythm"
+            required
+          >
+
+            <option value="">
+              Choose one
+            </option>
+
+            <option>
+              Regular enough for me
+            </option>
+
+            <option>
+              A little irregular
+            </option>
+
+            <option>
+              Very irregular
+            </option>
+
+            <option>
+              Not sure / prefer not to say
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <div class="field">
+
+          <label for="energyLevel">
+            How was your energy?
+          </label>
+
+          <select
+            id="energyLevel"
+            required
+          >
+
+            <option value="">
+              Choose one
+            </option>
+
+            <option>Low</option>
+            <option>Variable</option>
+            <option>Steady</option>
+            <option>High</option>
+
+            <option>
+              Not sure / prefer not to say
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <div class="field full">
+
+          <label>
+            Supportive patterns noticed
+          </label>
+
+          <div class="check-list">
+
+            <div class="check-item">
+
+              <input
+                type="checkbox"
+                id="hydration"
+                value="Drank fluids regularly"
+              >
+
+              <label for="hydration">
+                Drank fluids regularly
+              </label>
+
+            </div>
+
+
+            <div class="check-item">
+
+              <input
+                type="checkbox"
+                id="protein"
+                value="Included a protein source"
+              >
+
+              <label for="protein">
+                Included a protein source
+              </label>
+
+            </div>
+
+
+            <div class="check-item">
+
+              <input
+                type="checkbox"
+                id="produce"
+                value="Had fruit or vegetables"
+              >
+
+              <label for="produce">
+                Had fruit or vegetables
+              </label>
+
+            </div>
+
+
+            <div class="check-item">
+
+              <input
+                type="checkbox"
+                id="workoutFuel"
+                value="Ate around exercise when needed"
+              >
+
+              <label for="workoutFuel">
+                Ate around exercise when I needed it
+              </label>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="field full">
+
+          <label for="nutritionNotes">
+            Optional note
+          </label>
+
+          <textarea
+            id="nutritionNotes"
+          ></textarea>
+
+        </div>
+
+      </div>
+
+
+      <div class="actions">
+
+        <button
+          class="primary"
+          type="submit"
+          id="nutritionSave"
+        >
+          Save check-in
+        </button>
+
+        <button
+          class="secondary"
+          type="button"
+          id="cancelNutritionEdit"
+          style="display:none"
+        >
+          Cancel
+        </button>
+
+      </div>
+
+    </form>
+
+  </section>
+
+
+  <div
+    class="list"
+    id="nutritionHistory"
+  ></div>
+
+</section>
+
+
+<!-- WEIGHT -->
+
+<section class="view" id="weightView">
+
+  <div class="page-title">
+
+    <h2 id="weightFormTitle">
+      Weight progress
+    </h2>
+
+    <p>
+      Weigh-ins are optional rather than required daily.
+    </p>
+
+  </div>
+
+
+  <div class="two-col">
+
+    <section class="card section">
+
+      <form id="weightForm">
+
+        <div class="form-grid">
+
+          <div class="field">
+
+            <label for="weightDate">
+              Date
+            </label>
+
+            <input
+              id="weightDate"
+              type="date"
+              required
+            >
+
+          </div>
+
+
+          <div class="field">
+
+            <label for="weightValue">
+              Weight
+            </label>
+
+            <input
+              id="weightValue"
+              type="number"
+              min="30"
+              max="300"
+              step="0.1"
+              required
+            >
+
+            <small>Kilograms</small>
+
+          </div>
+
+        </div>
+
+
+        <div class="actions">
+
+          <button
+            class="primary"
+            type="submit"
+            id="weightSave"
+          >
+            Save weigh-in
+          </button>
+
+          <button
+            class="secondary"
+            type="button"
+            id="cancelWeightEdit"
+            style="display:none"
+          >
+            Cancel
+          </button>
+
+        </div>
+
+      </form>
+
+
+      <div class="goal-settings">
+
+        <h3>Goal settings</h3>
+
+        <form id="goalForm">
+
+          <div class="form-grid">
+
+            <div class="field">
+
+              <label for="targetWeightInput">
+                Target weight
+              </label>
+
+              <input
+                id="targetWeightInput"
+                type="number"
+                min="30"
+                max="300"
+                step="0.1"
+              >
+
+            </div>
+
+
+            <div class="field">
+
+              <label for="targetDateInput">
+                Target date
+              </label>
+
+              <input
+                id="targetDateInput"
+                type="date"
+              >
+
+            </div>
+
+
+            <div class="field">
+
+              <label for="workoutGoalInput">
+                Structured workouts per week
+              </label>
+
+              <input
+                id="workoutGoalInput"
+                type="number"
+                min="1"
+                max="14"
+                step="1"
+              >
+
+            </div>
+
+          </div>
+
+
+          <div class="actions">
+
+            <button
+              class="primary"
+              type="submit"
+            >
+              Update goal
+            </button>
+
+          </div>
+
+        </form>
+
+      </div>
+
+    </section>
+
+
+    <div
+      class="list"
+      id="weightHistory"
+    ></div>
+
+  </div>
+
+</section>
+
+</main>
+
+
+<nav class="bottom-nav">
+
+  <button
+    class="nav active"
+    data-view="dashboard"
+  >
+    <span>▦</span>
+    Dashboard
+  </button>
+
+  <button
+    class="nav"
+    data-view="workout"
+  >
+    <span>＋</span>
+    Workout
+  </button>
+
+  <button
+    class="nav"
+    data-view="nutrition"
+  >
+    <span>○</span>
+    Nutrition
+  </button>
+
+  <button
+    class="nav"
+    data-view="weight"
+  >
+    <span>↘</span>
+    Weight
+  </button>
+
+</nav>
+
+</div>
+
+
+<!-- GITHUB CONFIGURATION -->
+
+<div
+  class="modal-backdrop"
+  id="githubModal"
+>
+
+  <div class="modal">
+
+    <h2>
+      Connect GitHub
+    </h2>
+
+    <p>
+      The tracker will store all training data in
+      <strong>training-data.json</strong> in this repository.
+    </p>
+
+
+    <div class="security-box">
+      <strong>Important privacy and security warning</strong><br><br>
+
+      If the repository is public, your weight,
+      workout and nutrition data will be visible to
+      anyone on the internet.<br><br>
+
+      Your Personal Access Token will be saved in this
+      browser's localStorage as requested. Do not use a
+      broadly privileged token. Use a fine-grained token
+      restricted to the data repository with Contents
+      read/write permission only.
+    </div>
+
+
+    <form id="githubConfigForm">
+
+      <div class="form-grid">
+
+        <div class="field">
+
+          <label for="githubOwner">
+            GitHub username / repository owner
+          </label>
+
+          <input
+            id="githubOwner"
+            autocomplete="username"
+            required
+          >
+
+        </div>
+
+
+        <div class="field">
+
+          <label for="githubRepo">
+            Repository name
+          </label>
+
+          <input
+            id="githubRepo"
+            placeholder="training-tracker-data"
+            required
+          >
+
+        </div>
+
+
+        <div class="field">
+
+          <label for="githubBranch">
+            Branch
+          </label>
+
+          <input
+            id="githubBranch"
+            value="main"
+            required
+          >
+
+        </div>
+
+
+        <div class="field">
+
+          <label for="githubToken">
+            Fine-grained Personal Access Token
+          </label>
+
+          <input
+            id="githubToken"
+            type="password"
+            autocomplete="off"
+            required
+          >
+
+          <small>
+            This token is stored only in localStorage
+            on this browser, not in training-data.json.
+          </small>
+
+        </div>
+
+      </div>
+
+
+      <div class="modal-buttons">
+
+        <button
+          class="primary"
+          type="submit"
+          id="connectGithubButton"
+        >
+          Connect and load data
+        </button>
+
+        <button
+          class="delete"
+          type="button"
+          id="forgetGithubButton"
+        >
+          Forget connection
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+
+</div>
+
+
+<div
+  class="loading-overlay"
+  id="loadingOverlay"
+>
+
+  <div class="loading-card">
+
+    <strong id="loadingTitle">
+      Connecting to GitHub…
+    </strong>
+
+    <span id="loadingMessage">
+      Loading training-data.json
+    </span>
+
+  </div>
+
+</div>
+
+
+<div
+  class="toast"
+  id="toast"
+></div>
+
+
+<script>
+const CONFIG_KEY =
+  "training-tracker-github-config-v1";
+
+const DATA_FILE =
+  "training-data.json";
+
+const GITHUB_API_VERSION =
+  "2026-03-10";
+
+const LEGACY_KEYS = {
+  profile: "weight-app-profile-v1",
+  workouts: "weight-app-workouts-v1",
+  weights: "weight-app-weighins-v1",
+  nutrition: "weight-app-nutrition-v1"
+};
+
+
+let githubConfig = null;
+let repositoryInfo = null;
+let remoteFileSha = null;
+let appData = null;
+
+let workoutEditingId = null;
+let nutritionEditingId = null;
+let weightEditingId = null;
+
+
+/* =============================
+   BASIC HELPERS
+============================= */
+
+function makeId() {
+
+  if (
+    window.crypto &&
+    crypto.randomUUID
+  ) {
+    return crypto.randomUUID();
+  }
+
+  return (
+    Date.now().toString(36) +
+    Math.random().toString(36).slice(2)
+  );
+}
+
+
+function isoToday() {
+
+  const d = new Date();
+
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, "0"),
+    String(d.getDate()).padStart(2, "0")
+  ].join("-");
+}
+
+
+function parseDate(value) {
+
+  const [y, m, d] =
+    value.split("-").map(Number);
+
+  return new Date(
+    y,
+    m - 1,
+    d
+  );
+}
+
+
+function formatDate(value) {
+
+  return new Intl.DateTimeFormat(
+    undefined,
+    {
+      month: "short",
+      day: "numeric",
+      year: "numeric"
+    }
+  ).format(
+    parseDate(value)
+  );
+}
+
+
+function mondayOfCurrentWeek() {
+
+  const now = new Date();
+
+  const difference =
+    now.getDay() === 0
+      ? -6
+      : 1 - now.getDay();
+
+  return new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate() + difference
+  );
+}
+
+
+function deepClone(value) {
+
+  return JSON.parse(
+    JSON.stringify(value)
+  );
+}
+
+
+function escapeHTML(text) {
+
+  const element =
+    document.createElement("div");
+
+  element.textContent =
+    text ?? "";
+
+  return element.innerHTML;
+}
+
+
+let toastTimer;
+
+
+function toast(message) {
+
+  const element =
+    document.getElementById(
+      "toast"
+    );
+
+  element.textContent =
+    message;
+
+  element.classList.add(
+    "show"
+  );
+
+  clearTimeout(
+    toastTimer
+  );
+
+  toastTimer =
+    setTimeout(
+      () =>
+        element.classList.remove(
+          "show"
+        ),
+      2800
+    );
+}
+
+
+function showLoading(
+  title,
+  message
+) {
+
+  document.getElementById(
+    "loadingTitle"
+  ).textContent =
+    title;
+
+  document.getElementById(
+    "loadingMessage"
+  ).textContent =
+    message;
+
+  document.getElementById(
+    "loadingOverlay"
+  ).classList.add(
+    "show"
+  );
+}
+
+
+function hideLoading() {
+
+  document.getElementById(
+    "loadingOverlay"
+  ).classList.remove(
+    "show"
+  );
+}
+
+
+/* =============================
+   DEFAULT / LEGACY DATA
+============================= */
+
+function defaultData() {
+
+  return {
+
+    schemaVersion: 2,
+
+    updatedAt:
+      new Date().toISOString(),
+
+    profile: {
+      startWeight: 84,
+      targetWeight: 60,
+      targetDate: "2027-02-28",
+      workoutGoal: 2,
+      startDate: isoToday()
+    },
+
+    workouts: [],
+
+    weights: [
+      {
+        id: makeId(),
+        date: isoToday(),
+        weight: 84,
+        baseline: true
+      }
+    ],
+
+    nutrition: []
+
+  };
+}
+
+
+function safeLegacyObject(key) {
+
+  try {
+
+    const value =
+      JSON.parse(
+        localStorage.getItem(key)
+      );
+
+    return value &&
+      typeof value === "object"
+        ? value
+        : null;
+
+  }
+
+  catch {
+    return null;
+  }
+}
+
+
+function safeLegacyArray(key) {
+
+  const value =
+    safeLegacyObject(key);
+
+  return Array.isArray(value)
+    ? value
+    : [];
+}
+
+
+function buildInitialData() {
+
+  const fallback =
+    defaultData();
+
+
+  const profile =
+    safeLegacyObject(
+      LEGACY_KEYS.profile
+    );
+
+
+  const workouts =
+    safeLegacyArray(
+      LEGACY_KEYS.workouts
+    );
+
+
+  const weights =
+    safeLegacyArray(
+      LEGACY_KEYS.weights
+    );
+
+
+  const nutrition =
+    safeLegacyArray(
+      LEGACY_KEYS.nutrition
+    );
+
+
+  const hasLegacy =
+    Boolean(profile) ||
+    workouts.length ||
+    weights.length ||
+    nutrition.length;
+
+
+  if (!hasLegacy) {
+    return fallback;
+  }
+
+
+  return normalizeData({
+
+    schemaVersion: 2,
+
+    profile:
+      profile ||
+      fallback.profile,
+
+    workouts,
+
+    weights:
+      weights.length
+        ? weights
+        : fallback.weights,
+
+    nutrition
+
+  });
+}
+
+
+function normalizeData(data) {
+
+  const fallback =
+    defaultData();
+
+
+  const normalized = {
+
+    schemaVersion: 2,
+
+    updatedAt:
+      data?.updatedAt ||
+      new Date().toISOString(),
+
+    profile: {
+      ...fallback.profile,
+      ...(data?.profile || {})
+    },
+
+    workouts:
+      Array.isArray(data?.workouts)
+        ? data.workouts
+        : [],
+
+    weights:
+      Array.isArray(data?.weights)
+        ? data.weights
+        : [],
+
+    nutrition:
+      Array.isArray(data?.nutrition)
+        ? data.nutrition
+        : []
+
+  };
+
+
+  normalized.workouts =
+    normalized.workouts.map(
+      workout => {
+
+        let type =
+          workout.type;
+
+        if (
+          type === "Burn Pilates" ||
+          type === "Firm Pilates"
+        ) {
+          type =
+            "Burn & Firm Pilates";
+        }
+
+        return {
+          ...workout,
+          id:
+            workout.id ||
+            makeId(),
+          type
+        };
+
+      }
+    );
+
+
+  normalized.weights =
+    normalized.weights.map(
+      entry => ({
+        ...entry,
+        id:
+          entry.id ||
+          makeId()
+      })
+    );
+
+
+  normalized.nutrition =
+    normalized.nutrition.map(
+      entry => ({
+        ...entry,
+        id:
+          entry.id ||
+          makeId()
+      })
+    );
+
+
+  if (
+    !normalized.weights.length
+  ) {
+
+    normalized.weights.push({
+
+      id: makeId(),
+
+      date:
+        normalized.profile.startDate ||
+        isoToday(),
+
+      weight:
+        normalized.profile.startWeight,
+
+      baseline:
+        true
+
+    });
+
+  }
+
+
+  return normalized;
+}
+
+
+/* =============================
+   GITHUB CONFIG
+============================= */
+
+function loadGithubConfig() {
+
+  try {
+
+    const value =
+      JSON.parse(
+        localStorage.getItem(
+          CONFIG_KEY
+        )
+      );
+
+    if (
+      value?.owner &&
+      value?.repo &&
+      value?.branch &&
+      value?.token
+    ) {
+      return value;
+    }
+
+  }
+
+  catch {}
+
+
+  return null;
+}
+
+
+function saveGithubConfig(config) {
+
+  localStorage.setItem(
+    CONFIG_KEY,
+    JSON.stringify(config)
+  );
+}
+
+
+function openGithubModal() {
+
+  document.getElementById(
+    "githubOwner"
+  ).value =
+    githubConfig?.owner || "";
+
+
+  document.getElementById(
+    "githubRepo"
+  ).value =
+    githubConfig?.repo || "";
+
+
+  document.getElementById(
+    "githubBranch"
+  ).value =
+    githubConfig?.branch || "main";
+
+
+  document.getElementById(
+    "githubToken"
+  ).value =
+    githubConfig?.token || "";
+
+
+  document.getElementById(
+    "githubModal"
+  ).classList.add(
+    "show"
+  );
+}
+
+
+function closeGithubModal() {
+
+  document.getElementById(
+    "githubModal"
+  ).classList.remove(
+    "show"
+  );
+}
+
+
+/* =============================
+   GITHUB API
+============================= */
+
+async function githubRequest(
+  path,
+  options = {}
+) {
+
+  if (!githubConfig) {
+    throw new Error(
+      "GitHub is not configured."
+    );
+  }
+
+
+  const headers = {
+    "Accept":
+      "application/vnd.github+json",
+
+    "Authorization":
+      `Bearer ${githubConfig.token}`,
+
+    "X-GitHub-Api-Version":
+      GITHUB_API_VERSION
+  };
+
+
+  if (options.body) {
+    headers["Content-Type"] =
+      "application/json";
+  }
+
+
+  const response =
+    await fetch(
+      `https://api.github.com${path}`,
+      {
+        method:
+          options.method || "GET",
+
+        headers,
+
+        body:
+          options.body
+            ? JSON.stringify(
+                options.body
+              )
+            : undefined
+      }
+    );
+
+
+  const text =
+    await response.text();
+
+
+  let data =
+    null;
+
+
+  if (text) {
+
+    try {
+      data =
+        JSON.parse(text);
+    }
+
+    catch {
+      data =
+        text;
+    }
+
+  }
+
+
+  if (!response.ok) {
+
+    const error =
+      new Error(
+        data?.message ||
+        `GitHub API error ${response.status}`
+      );
+
+    error.status =
+      response.status;
+
+    error.data =
+      data;
+
+    throw error;
+
+  }
+
+
+  return data;
+}
+
+
+function base64EncodeUTF8(text) {
+
+  const bytes =
+    new TextEncoder()
+      .encode(text);
+
+
+  let binary =
+    "";
+
+
+  const chunkSize =
+    8192;
+
+
+  for (
+    let i = 0;
+    i < bytes.length;
+    i += chunkSize
+  ) {
+
+    binary +=
+      String.fromCharCode(
+        ...bytes.subarray(
+          i,
+          i + chunkSize
+        )
+      );
+
+  }
+
+
+  return btoa(binary);
+}
+
+
+function base64DecodeUTF8(value) {
+
+  const binary =
+    atob(
+      value.replace(
+        /\n/g,
+        ""
+      )
+    );
+
+
+  const bytes =
+    new Uint8Array(
+      binary.length
+    );
+
+
+  for (
+    let i = 0;
+    i < binary.length;
+    i++
+  ) {
+
+    bytes[i] =
+      binary.charCodeAt(i);
+
+  }
+
+
+  return new TextDecoder()
+    .decode(bytes);
+}
+
+
+function repositoryPath() {
+
+  return (
+    `/repos/` +
+    `${encodeURIComponent(githubConfig.owner)}/` +
+    `${encodeURIComponent(githubConfig.repo)}`
+  );
+}
+
+
+async function verifyGithubConnection() {
+
+  repositoryInfo =
+    await githubRequest(
+      repositoryPath()
+    );
+
+
+  await githubRequest(
+    repositoryPath() +
+    "/branches/" +
+    encodeURIComponent(
+      githubConfig.branch
+    )
+  );
+
+
+  renderRepositoryPrivacy();
+
+
+  if (
+    !repositoryInfo.private &&
+    !githubConfig.publicConfirmed
+  ) {
+
+    const confirmed =
+      window.confirm(
+        "WARNING: This repository is PUBLIC.\n\n" +
+        "Your weight, nutrition and workout data in " +
+        "training-data.json will be visible to anyone " +
+        "on the internet.\n\n" +
+        "Continue using this public repository?"
+      );
+
+
+    if (!confirmed) {
+
+      throw new Error(
+        "Public repository connection cancelled."
+      );
+
+    }
+
+
+    githubConfig.publicConfirmed =
+      true;
+
+
+    saveGithubConfig(
+      githubConfig
+    );
+
+  }
+}
+
+
+async function fetchRemoteFile() {
+
+  try {
+
+    return await githubRequest(
+      repositoryPath() +
+      `/contents/${encodeURIComponent(DATA_FILE)}` +
+      `?ref=${encodeURIComponent(githubConfig.branch)}`
+    );
+
+  }
+
+  catch (error) {
+
+    if (
+      error.status === 404
+    ) {
+      return null;
+    }
+
+    throw error;
+
+  }
+}
+
+
+async function loadDataFromGithub() {
+
+  const file =
+    await fetchRemoteFile();
+
+
+  if (!file) {
+
+    appData =
+      buildInitialData();
+
+
+    remoteFileSha =
+      null;
+
+
+    await saveDataToGithub(
+      "Initialize training tracker data"
+    );
+
+
+    return;
+  }
+
+
+  remoteFileSha =
+    file.sha;
+
+
+  const jsonText =
+    base64DecodeUTF8(
+      file.content
+    );
+
+
+  appData =
+    normalizeData(
+      JSON.parse(jsonText)
+    );
+}
+
+
+async function saveDataToGithub(
+  commitMessage =
+    "Update training tracker data"
+) {
+
+  appData.updatedAt =
+    new Date().toISOString();
+
+
+  const content =
+    base64EncodeUTF8(
+      JSON.stringify(
+        appData,
+        null,
+        2
+      )
+    );
+
+
+  const body = {
+
+    message:
+      commitMessage,
+
+    content,
+
+    branch:
+      githubConfig.branch
+
+  };
+
+
+  if (
+    remoteFileSha
+  ) {
+    body.sha =
+      remoteFileSha;
+  }
+
+
+  const result =
+    await githubRequest(
+      repositoryPath() +
+      `/contents/${encodeURIComponent(DATA_FILE)}`,
+      {
+        method: "PUT",
+        body
+      }
+    );
+
+
+  remoteFileSha =
+    result.content?.sha ||
+    remoteFileSha;
+
+
+  setSyncStatus(
+    "Synced"
+  );
+}
+
+
+async function connectAndLoad() {
+
+  showLoading(
+    "Connecting to GitHub…",
+    "Checking repository and loading training-data.json"
+  );
+
+
+  try {
+
+    setSyncStatus(
+      "Connecting…"
+    );
+
+
+    await verifyGithubConnection();
+
+
+    await loadDataFromGithub();
+
+
+    renderAll();
+
+
+    resetWorkoutForm();
+    resetNutritionForm();
+    resetWeightForm();
+
+
+    closeGithubModal();
+
+
+    setSyncStatus(
+      "Synced"
+    );
+
+
+    toast(
+      "Training data loaded from GitHub."
+    );
+
+  }
+
+  catch (error) {
+
+    console.error(error);
+
+
+    setSyncStatus(
+      "Connection error"
+    );
+
+
+    toast(
+      error.message ||
+      "Could not connect to GitHub."
+    );
+
+
+    openGithubModal();
+
+  }
+
+  finally {
+    hideLoading();
+  }
+}
+
+
+/* =============================
+   SAFE GITHUB MUTATIONS
+============================= */
+
+async function mutateAndSync(
+  commitMessage,
+  mutation
+) {
+
+  const previous =
+    deepClone(
+      appData
+    );
+
+
+  try {
+
+    mutation(
+      appData
+    );
+
+
+    renderAll();
+
+
+    setSyncStatus(
+      "Saving…"
+    );
+
+
+    await saveDataToGithub(
+      commitMessage
+    );
+
+
+    toast(
+      "Saved to GitHub."
+    );
+
+
+    return true;
+
+  }
+
+  catch (error) {
+
+    console.error(error);
+
+
+    appData =
+      previous;
+
+
+    renderAll();
+
+
+    setSyncStatus(
+      "Save failed"
+    );
+
+
+    let message =
+      "GitHub save failed. Your change was not kept.";
+
+
+    if (
+      error.status === 409
+    ) {
+
+      message =
+        "The GitHub file changed elsewhere. Reload from GitHub before editing again.";
+
+    }
+
+    else if (
+      error.status === 401
+    ) {
+
+      message =
+        "GitHub rejected the token. Check your Personal Access Token.";
+
+    }
+
+    else if (
+      error.status === 403
+    ) {
+
+      message =
+        "GitHub denied the save. Check that the token has Contents read/write permission.";
+
+    }
+
+
+    alert(message);
+
+
+    return false;
+
+  }
+}
+
+
+/* =============================
+   REPOSITORY DISPLAY
+============================= */
+
+function setSyncStatus(text) {
+
+  document.getElementById(
+    "syncStatus"
+  ).textContent =
+    `GitHub · ${text}`;
+}
+
+
+function renderRepositoryPrivacy() {
+
+  const warning =
+    document.getElementById(
+      "privacyWarning"
+    );
+
+
+  if (
+    !repositoryInfo
+  ) {
+
+    warning.className =
+      "privacy-warning private";
+
+
+    warning.innerHTML =
+      "<strong>GitHub data privacy</strong>" +
+      "If your repository is public, training-data.json " +
+      "will be visible to anyone on the internet.";
+
+
+    return;
+  }
+
+
+  if (
+    repositoryInfo.private
+  ) {
+
+    warning.className =
+      "privacy-warning private";
+
+
+    warning.innerHTML =
+      "<strong>Private GitHub repository</strong>" +
+      `Data is syncing to ${escapeHTML(githubConfig.owner)}/` +
+      `${escapeHTML(githubConfig.repo)} on ` +
+      `${escapeHTML(githubConfig.branch)}. ` +
+      "The repository is currently private.";
+
+  }
+
+  else {
+
+    warning.className =
+      "privacy-warning public";
+
+
+    warning.innerHTML =
+      "<strong>PUBLIC REPOSITORY — YOUR TRACKER DATA IS PUBLIC</strong>" +
+      "training-data.json contains your weight, workout and " +
+      "nutrition tracking information. Because this repository " +
+      "is public, anyone on the internet can view that file.";
+
+  }
+}
+
+
+/* =============================
+   NAVIGATION
+============================= */
+
+const titles = {
+
+  dashboard:
+    "Your progress dashboard",
+
+  workout:
+    "Workout log",
+
+  nutrition:
+    "Nutrition check-in",
+
+  weight:
+    "Weight progress"
+
+};
+
+
+function showView(name) {
+
+  document
+    .querySelectorAll(".view")
+    .forEach(
+      view =>
+        view.classList.remove(
+          "active"
+        )
+    );
+
+
+  document
+    .querySelectorAll(".nav")
+    .forEach(
+      button =>
+        button.classList.remove(
+          "active"
+        )
+    );
+
+
+  document
+    .getElementById(
+      name + "View"
+    )
+    .classList.add(
+      "active"
+    );
+
+
+  document
+    .querySelector(
+      `[data-view="${name}"]`
+    )
+    .classList.add(
+      "active"
+    );
+
+
+  document.getElementById(
+    "headerTitle"
+  ).textContent =
+    titles[name];
+
+
+  window.scrollTo({
+    top:0,
+    behavior:"smooth"
+  });
+}
+
+
+document
+  .querySelectorAll(".nav")
+  .forEach(
+    button => {
+
+      button.addEventListener(
+        "click",
+        () =>
+          showView(
+            button.dataset.view
+          )
+      );
+
+    }
+  );
+
+
+/* =============================
+   DATA HELPERS
+============================= */
+
+function sortedWeights() {
+
+  return appData.weights
+    .slice()
+    .sort(
+      (a,b) =>
+        parseDate(a.date) -
+        parseDate(b.date)
+    );
+}
+
+
+function latestWeight() {
+
+  const weights =
+    sortedWeights();
+
+
+  return weights.length
+    ? Number(
+        weights[
+          weights.length - 1
+        ].weight
+      )
+    : Number(
+        appData.profile.startWeight
+      );
+}
+
+
+function thisWeeks(items) {
+
+  const start =
+    mondayOfCurrentWeek();
+
+
+  const end =
+    new Date(start);
+
+
+  end.setDate(
+    end.getDate() + 6
+  );
+
+
+  return items.filter(
+    item => {
+
+      const d =
+        parseDate(
+          item.date
+        );
+
+
+      return (
+        d >= start &&
+        d <= end
+      );
+
+    }
+  );
+}
+
+
+/* =============================
+   DASHBOARD
+============================= */
+
+function renderDashboard() {
+
+  if (!appData) {
+    return;
+  }
+
+
+  const profile =
+    appData.profile;
+
+
+  const current =
+    latestWeight();
+
+
+  const start =
+    Number(
+      profile.startWeight
+    );
+
+
+  const target =
+    Number(
+      profile.targetWeight
+    );
+
+
+  const totalGoal =
+    start - target;
+
+
+  const lost =
+    start - current;
+
+
+  const remaining =
+    Math.max(
+      0,
+      current - target
+    );
+
+
+  let percent =
+    totalGoal > 0
+      ? (
+          lost /
+          totalGoal
+        ) * 100
+      : 0;
+
+
+  percent =
+    Math.max(
+      0,
+      Math.min(
+        100,
+        percent
+      )
+    );
+
+
+  document.getElementById(
+    "currentWeight"
+  ).textContent =
+    current
+      .toFixed(1)
+      .replace(".0","");
+
+
+  document.getElementById(
+    "remainingWeight"
+  ).textContent =
+    remaining
+      .toFixed(1)
+      .replace(".0","");
+
+
+  document.getElementById(
+    "goalProgress"
+  ).style.width =
+    `${percent}%`;
+
+
+  document.getElementById(
+    "progressCaption"
+  ).textContent =
+    `${Math.round(percent)}% toward goal`;
+
+
+  document.getElementById(
+    "weightChangeText"
+  ).textContent =
+    lost > 0
+      ? `${lost.toFixed(1)} kg below your starting weight`
+      : lost < 0
+        ? `${Math.abs(lost).toFixed(1)} kg above your starting weight`
+        : "Starting point";
+
+
+  document.getElementById(
+    "heroGoal"
+  ).textContent =
+    `Goal ${target} kg`;
+
+
+  document.getElementById(
+    "goalPill"
+  ).textContent =
+    `Goal · ${target} kg`;
+
+
+  document.getElementById(
+    "workoutGoal"
+  ).textContent =
+    profile.workoutGoal;
+
+
+  const workouts =
+    thisWeeks(
+      appData.workouts
+    );
+
+
+  document.getElementById(
+    "weeklyWorkouts"
+  ).textContent =
+    workouts.length;
+
+
+  document.getElementById(
+    "weeklyMinutes"
+  ).textContent =
+    workouts.reduce(
+      (total, workout) =>
+        total +
+        Number(
+          workout.duration || 0
+        ),
+      0
+    );
+
+
+  document.getElementById(
+    "nutritionCheckins"
+  ).textContent =
+    thisWeeks(
+      appData.nutrition
+    ).length;
+
+
+  document.getElementById(
+    "trxStatus"
+  ).textContent =
+    workouts.some(
+      workout =>
+        workout.type ===
+        "TRX / small-group training"
+    )
+      ? "Logged ✓"
+      : "Not logged";
+
+
+  document.getElementById(
+    "pilatesStatus"
+  ).textContent =
+    workouts.some(
+      workout =>
+        workout.type ===
+        "Burn & Firm Pilates"
+    )
+      ? "Logged ✓"
+      : "Not logged";
+
+
+  const targetDate =
+    parseDate(
+      profile.targetDate
+    );
+
+
+  document.getElementById(
+    "targetDateHeader"
+  ).textContent =
+    "Target · " +
+    new Intl.DateTimeFormat(
+      undefined,
+      {
+        month:"short",
+        year:"numeric"
+      }
+    ).format(
+      targetDate
+    );
+
+
+  renderWeightChart();
+  renderNutritionSummary();
+}
+
+
+function renderWeightChart() {
+
+  const svg =
+    document.getElementById(
+      "weightChart"
+    );
+
+
+  const weights =
+    sortedWeights();
+
+
+  const profile =
+    appData.profile;
+
+
+  const width =
+    760;
+
+  const height =
+    300;
+
+
+  const margin = {
+    left:52,
+    right:30,
+    top:25,
+    bottom:45
+  };
+
+
+  const plotWidth =
+    width -
+    margin.left -
+    margin.right;
+
+
+  const plotHeight =
+    height -
+    margin.top -
+    margin.bottom;
+
+
+  const values =
+    weights.map(
+      entry =>
+        Number(
+          entry.weight
+        )
+    );
+
+
+  values.push(
+    Number(
+      profile.targetWeight
+    )
+  );
+
+
+  values.push(
+    Number(
+      profile.startWeight
+    )
+  );
+
+
+  let max =
+    Math.ceil(
+      Math.max(...values) + 2
+    );
+
+
+  let min =
+    Math.floor(
+      Math.min(...values) - 2
+    );
+
+
+  if (
+    max - min < 10
+  ) {
+    max += 5;
+    min -= 5;
+  }
+
+
+  const y =
+    value =>
+      margin.top +
+      (
+        (max - value) /
+        (max - min)
+      ) *
+      plotHeight;
+
+
+  const x =
+    index =>
+      weights.length <= 1
+        ? margin.left
+        : margin.left +
+          (
+            index /
+            (weights.length - 1)
+          ) *
+          plotWidth;
+
+
+  let html =
+    "";
+
+
+  for (
+    let i = 0;
+    i <= 5;
+    i++
+  ) {
+
+    const value =
+      min +
+      (
+        (max - min) /
+        5
+      ) *
+      i;
+
+
+    const yy =
+      y(value);
+
+
+    html += `
+      <line
+        x1="${margin.left}"
+        y1="${yy}"
+        x2="${width-margin.right}"
+        y2="${yy}"
+        stroke="#dfe7e5"
+      />
+
+      <text
+        x="${margin.left-9}"
+        y="${yy+4}"
+        text-anchor="end"
+        font-size="11"
+        fill="#718385"
+      >
+        ${value.toFixed(0)}
+      </text>
+    `;
+  }
+
+
+  const targetY =
+    y(
+      Number(
+        profile.targetWeight
+      )
+    );
+
+
+  html += `
+    <line
+      x1="${margin.left}"
+      y1="${targetY}"
+      x2="${width-margin.right}"
+      y2="${targetY}"
+      stroke="#2f705b"
+      stroke-width="2"
+      stroke-dasharray="7 6"
+    />
+
+    <text
+      x="${width-margin.right}"
+      y="${targetY-7}"
+      text-anchor="end"
+      font-size="11"
+      fill="#2f705b"
+    >
+      Goal ${profile.targetWeight} kg
+    </text>
+  `;
+
+
+  if (
+    weights.length
+  ) {
+
+    const points =
+      weights
+        .map(
+          (entry,index) =>
+            `${x(index)},${y(
+              Number(
+                entry.weight
+              )
+            )}`
+        )
+        .join(" ");
+
+
+    html += `
+      <polyline
+        points="${points}"
+        fill="none"
+        stroke="#337f92"
+        stroke-width="3"
+        stroke-linejoin="round"
+        stroke-linecap="round"
+      />
+    `;
+
+
+    weights.forEach(
+      (entry,index) => {
+
+        html += `
+          <circle
+            cx="${x(index)}"
+            cy="${y(
+              Number(
+                entry.weight
+              )
+            )}"
+            r="5"
+            fill="#fff"
+            stroke="#337f92"
+            stroke-width="3"
+          >
+            <title>
+              ${formatDate(entry.date)}:
+              ${entry.weight} kg
+            </title>
+          </circle>
+        `;
+
+      }
+    );
+
+  }
+
+
+  svg.innerHTML =
+    html;
+}
+
+
+function renderNutritionSummary() {
+
+  const box =
+    document.getElementById(
+      "nutritionSummary"
+    );
+
+
+  const entries =
+    appData.nutrition
+      .slice()
+      .sort(
+        (a,b) =>
+          parseDate(b.date) -
+          parseDate(a.date)
+      )
+      .slice(0,7);
+
+
+  if (!entries.length) {
+
+    box.innerHTML = `
+      <div class="nutrition-summary-row">
+        <strong>No check-ins yet</strong>
+        <span>
+          Use the Nutrition tab only when it feels useful.
+        </span>
+      </div>
+    `;
+
+    return;
+  }
+
+
+  const counts =
+    {};
+
+
+  entries.forEach(
+    entry => {
+
+      counts[entry.rhythm] =
+        (counts[entry.rhythm] || 0) + 1;
+
+    }
+  );
+
+
+  const common =
+    Object.entries(counts)
+      .sort(
+        (a,b) =>
+          b[1] - a[1]
+      )[0]?.[0] || "—";
+
+
+  box.innerHTML = `
+    <div class="nutrition-summary-row">
+      <strong>
+        ${entries.length}
+        recent check-in${entries.length === 1 ? "" : "s"}
+      </strong>
+
+      <span>
+        No completion target or streak is attached.
+      </span>
+    </div>
+
+    <div class="nutrition-summary-row">
+      <strong>
+        Most commonly logged eating rhythm
+      </strong>
+
+      <span>
+        ${escapeHTML(common)}
+      </span>
+    </div>
+  `;
+}
+
+
+/* =============================
+   WORKOUTS
+============================= */
+
+function resetWorkoutForm() {
+
+  workoutEditingId =
+    null;
+
+
+  document.getElementById(
+    "workoutForm"
+  ).reset();
+
+
+  document.getElementById(
+    "workoutDate"
+  ).value =
+    isoToday();
+
+
+  document.getElementById(
+    "workoutFormTitle"
+  ).textContent =
+    "Log a workout";
+
+
+  document.getElementById(
+    "workoutSave"
+  ).textContent =
+    "Save workout";
+
+
+  document.getElementById(
+    "cancelWorkoutEdit"
+  ).style.display =
+    "none";
+}
+
+
+document.getElementById(
+  "workoutForm"
+).addEventListener(
+  "submit",
+  async event => {
+
+    event.preventDefault();
+
+
+    const date =
+      document.getElementById(
+        "workoutDate"
+      ).value;
+
+
+    const type =
+      document.getElementById(
+        "workoutType"
+      ).value;
+
+
+    const duration =
+      Number(
+        document.getElementById(
+          "duration"
+        ).value
+      );
+
+
+    const effortInput =
+      document.querySelector(
+        'input[name="effort"]:checked'
+      );
+
+
+    const notes =
+      document.getElementById(
+        "workoutNotes"
+      ).value.trim();
+
+
+    if (
+      !date ||
+      !type ||
+      !duration ||
+      !effortInput
+    ) {
+      return;
+    }
+
+
+    const effort =
+      Number(
+        effortInput.value
+      );
+
+
+    const success =
+      await mutateAndSync(
+        workoutEditingId
+          ? "Edit workout"
+          : "Add workout",
+
+        data => {
+
+          if (
+            workoutEditingId
+          ) {
+
+            data.workouts =
+              data.workouts.map(
+                workout =>
+                  workout.id ===
+                  workoutEditingId
+
+                    ? {
+                        ...workout,
+                        date,
+                        type,
+                        duration,
+                        effort,
+                        notes
+                      }
+
+                    : workout
+              );
+
+          }
+
+          else {
+
+            data.workouts.push({
+
+              id:
+                makeId(),
+
+              date,
+              type,
+              duration,
+              effort,
+              notes,
+
+              createdAt:
+                new Date().toISOString()
+
+            });
+
+          }
+
+        }
+      );
+
+
+    if (
+      success
+    ) {
+
+      resetWorkoutForm();
+
+      showView(
+        "dashboard"
+      );
+
+    }
+
+  }
+);
+
+
+document.getElementById(
+  "cancelWorkoutEdit"
+).addEventListener(
+  "click",
+  resetWorkoutForm
+);
+
+
+function renderWorkoutHistory() {
+
+  const box =
+    document.getElementById(
+      "workoutHistory"
+    );
+
+
+  const workouts =
+    appData.workouts
+      .slice()
+      .sort(
+        (a,b) =>
+          parseDate(b.date) -
+          parseDate(a.date)
+      );
+
+
+  if (
+    !workouts.length
+  ) {
+
+    box.innerHTML = `
+      <div class="card empty">
+
+        <h3>
+          No workouts logged
+        </h3>
+
+        <p>
+          Your workouts will appear here.
+        </p>
+
+      </div>
+    `;
+
+    return;
+  }
+
+
+  box.innerHTML =
+    workouts.map(
+      workout => `
+
+        <article class="card item">
+
+          <div class="item-top">
+
+            <div>
+
+              <div class="item-date">
+                ${formatDate(workout.date)}
+              </div>
+
+              <div class="item-title">
+                ${escapeHTML(workout.type)}
+              </div>
+
+            </div>
+
+
+            <div class="item-badge">
+              Effort ${workout.effort}/5
+            </div>
+
+          </div>
+
+
+          <div class="item-meta">
+            ${workout.duration} minutes
+          </div>
+
+
+          ${
+            workout.notes
+
+              ? `
+                <p class="item-notes">
+                  ${escapeHTML(workout.notes)}
+                </p>
+              `
+
+              : ""
+          }
+
+
+          <div class="item-actions">
+
+            <button
+              class="secondary small"
+              data-workout-edit="${workout.id}"
+            >
+              Edit
+            </button>
+
+            <button
+              class="delete small"
+              data-workout-delete="${workout.id}"
+            >
+              Delete
+            </button>
+
+          </div>
+
+        </article>
+      `
+    )
+    .join("");
+}
+
+
+document.getElementById(
+  "workoutHistory"
+).addEventListener(
+  "click",
+  async event => {
+
+    const edit =
+      event.target.closest(
+        "[data-workout-edit]"
+      );
+
+
+    const remove =
+      event.target.closest(
+        "[data-workout-delete]"
+      );
+
+
+    if (edit) {
+
+      editWorkout(
+        edit.dataset.workoutEdit
+      );
+
+    }
+
+
+    if (remove) {
+
+      await deleteWorkout(
+        remove.dataset.workoutDelete
+      );
+
+    }
+
+  }
+);
+
+
+function editWorkout(id) {
+
+  const workout =
+    appData.workouts.find(
+      item =>
+        item.id === id
+    );
+
+
+  if (!workout) {
+    return;
+  }
+
+
+  workoutEditingId =
+    id;
+
+
+  document.getElementById(
+    "workoutDate"
+  ).value =
+    workout.date;
+
+
+  document.getElementById(
+    "workoutType"
+  ).value =
+    workout.type;
+
+
+  document.getElementById(
+    "duration"
+  ).value =
+    workout.duration;
+
+
+  document.getElementById(
+    "workoutNotes"
+  ).value =
+    workout.notes || "";
+
+
+  const effort =
+    document.getElementById(
+      `e${workout.effort}`
+    );
+
+
+  if (effort) {
+    effort.checked =
+      true;
+  }
+
+
+  document.getElementById(
+    "workoutFormTitle"
+  ).textContent =
+    "Edit workout";
+
+
+  document.getElementById(
+    "workoutSave"
+  ).textContent =
+    "Update workout";
+
+
+  document.getElementById(
+    "cancelWorkoutEdit"
+  ).style.display =
+    "inline-block";
+
+
+  showView(
+    "workout"
+  );
+}
+
+
+async function deleteWorkout(id) {
+
+  const workout =
+    appData.workouts.find(
+      item =>
+        item.id === id
+    );
+
+
+  if (
+    !workout ||
+    !confirm(
+      `Delete ${workout.type} from ${formatDate(workout.date)}?`
+    )
+  ) {
+    return;
+  }
+
+
+  await mutateAndSync(
+    "Delete workout",
+    data => {
+
+      data.workouts =
+        data.workouts.filter(
+          item =>
+            item.id !== id
+        );
+
+    }
+  );
+}
+
+
+/* =============================
+   NUTRITION
+============================= */
+
+function selectedPatterns() {
+
+  return [
+    "hydration",
+    "protein",
+    "produce",
+    "workoutFuel"
+  ]
+  .filter(
+    key =>
+      document.getElementById(
+        key
+      ).checked
+  )
+  .map(
+    key =>
+      document.getElementById(
+        key
+      ).value
+  );
+}
+
+
+function resetNutritionForm() {
+
+  nutritionEditingId =
+    null;
+
+
+  document.getElementById(
+    "nutritionForm"
+  ).reset();
+
+
+  document.getElementById(
+    "nutritionDate"
+  ).value =
+    isoToday();
+
+
+  document.getElementById(
+    "nutritionFormTitle"
+  ).textContent =
+    "Nutrition check-in";
+
+
+  document.getElementById(
+    "nutritionSave"
+  ).textContent =
+    "Save check-in";
+
+
+  document.getElementById(
+    "cancelNutritionEdit"
+  ).style.display =
+    "none";
+}
+
+
+document.getElementById(
+  "nutritionForm"
+).addEventListener(
+  "submit",
+  async event => {
+
+    event.preventDefault();
+
+
+    const date =
+      document.getElementById(
+        "nutritionDate"
+      ).value;
+
+
+    const rhythm =
+      document.getElementById(
+        "mealRhythm"
+      ).value;
+
+
+    const energy =
+      document.getElementById(
+        "energyLevel"
+      ).value;
+
+
+    const patterns =
+      selectedPatterns();
+
+
+    const notes =
+      document.getElementById(
+        "nutritionNotes"
+      ).value.trim();
+
+
+    if (
+      !date ||
+      !rhythm ||
+      !energy
+    ) {
+      return;
+    }
+
+
+    const success =
+      await mutateAndSync(
+        nutritionEditingId
+          ? "Edit nutrition check-in"
+          : "Add nutrition check-in",
+
+        data => {
+
+          if (
+            nutritionEditingId
+          ) {
+
+            data.nutrition =
+              data.nutrition.map(
+                item =>
+                  item.id ===
+                  nutritionEditingId
+
+                    ? {
+                        ...item,
+                        date,
+                        rhythm,
+                        energy,
+                        patterns,
+                        notes
+                      }
+
+                    : item
+              );
+
+          }
+
+          else {
+
+            data.nutrition.push({
+
+              id:
+                makeId(),
+
+              date,
+              rhythm,
+              energy,
+              patterns,
+              notes,
+
+              createdAt:
+                new Date().toISOString()
+
+            });
+
+          }
+
+        }
+      );
+
+
+    if (
+      success
+    ) {
+      resetNutritionForm();
+    }
+
+  }
+);
+
+
+document.getElementById(
+  "cancelNutritionEdit"
+).addEventListener(
+  "click",
+  resetNutritionForm
+);
+
+
+function renderNutritionHistory() {
+
+  const box =
+    document.getElementById(
+      "nutritionHistory"
+    );
+
+
+  const entries =
+    appData.nutrition
+      .slice()
+      .sort(
+        (a,b) =>
+          parseDate(b.date) -
+          parseDate(a.date)
+      );
+
+
+  if (
+    !entries.length
+  ) {
+
+    box.innerHTML = `
+      <div class="card empty">
+
+        <h3>
+          No nutrition check-ins
+        </h3>
+
+        <p>
+          This tracker is optional.
+        </p>
+
+      </div>
+    `;
+
+    return;
+  }
+
+
+  box.innerHTML =
+    entries.map(
+      entry => `
+
+        <article class="card item">
+
+          <div class="item-top">
+
+            <div>
+
+              <div class="item-date">
+                ${formatDate(entry.date)}
+              </div>
+
+              <div class="item-title">
+                ${escapeHTML(entry.rhythm)}
+              </div>
+
+            </div>
+
+            <div class="item-badge">
+              ${escapeHTML(entry.energy)} energy
+            </div>
+
+          </div>
+
+
+          ${
+            entry.patterns?.length
+
+              ? `
+                <div class="tag-wrap">
+
+                  ${
+                    entry.patterns
+                      .map(
+                        pattern =>
+                          `
+                            <span class="tag">
+                              ${escapeHTML(pattern)}
+                            </span>
+                          `
+                      )
+                      .join("")
+                  }
+
+                </div>
+              `
+
+              : ""
+          }
+
+
+          ${
+            entry.notes
+
+              ? `
+                <p class="item-notes">
+                  ${escapeHTML(entry.notes)}
+                </p>
+              `
+
+              : ""
+          }
+
+
+          <div class="item-actions">
+
+            <button
+              class="secondary small"
+              data-nutrition-edit="${entry.id}"
+            >
+              Edit
+            </button>
+
+            <button
+              class="delete small"
+              data-nutrition-delete="${entry.id}"
+            >
+              Delete
+            </button>
+
+          </div>
+
+        </article>
+      `
+    )
+    .join("");
+}
+
+
+document.getElementById(
+  "nutritionHistory"
+).addEventListener(
+  "click",
+  async event => {
+
+    const edit =
+      event.target.closest(
+        "[data-nutrition-edit]"
+      );
+
+
+    const remove =
+      event.target.closest(
+        "[data-nutrition-delete]"
+      );
+
+
+    if (edit) {
+
+      editNutrition(
+        edit.dataset.nutritionEdit
+      );
+
+    }
+
+
+    if (remove) {
+
+      const id =
+        remove.dataset.nutritionDelete;
+
+
+      const entry =
+        appData.nutrition.find(
+          item =>
+            item.id === id
+        );
+
+
+      if (
+        entry &&
+        confirm(
+          `Delete the nutrition check-in from ${formatDate(entry.date)}?`
+        )
+      ) {
+
+        await mutateAndSync(
+          "Delete nutrition check-in",
+          data => {
+
+            data.nutrition =
+              data.nutrition.filter(
+                item =>
+                  item.id !== id
+              );
+
+          }
+        );
+
+      }
+
+    }
+
+  }
+);
+
+
+function editNutrition(id) {
+
+  const entry =
+    appData.nutrition.find(
+      item =>
+        item.id === id
+    );
+
+
+  if (!entry) {
+    return;
+  }
+
+
+  nutritionEditingId =
+    id;
+
+
+  document.getElementById(
+    "nutritionDate"
+  ).value =
+    entry.date;
+
+
+  document.getElementById(
+    "mealRhythm"
+  ).value =
+    entry.rhythm;
+
+
+  document.getElementById(
+    "energyLevel"
+  ).value =
+    entry.energy;
+
+
+  document.getElementById(
+    "nutritionNotes"
+  ).value =
+    entry.notes || "";
+
+
+  [
+    "hydration",
+    "protein",
+    "produce",
+    "workoutFuel"
+  ].forEach(
+    key => {
+
+      const input =
+        document.getElementById(
+          key
+        );
+
+
+      input.checked =
+        (
+          entry.patterns || []
+        )
+        .includes(
+          input.value
+        );
+
+    }
+  );
+
+
+  document.getElementById(
+    "nutritionFormTitle"
+  ).textContent =
+    "Edit nutrition check-in";
+
+
+  document.getElementById(
+    "nutritionSave"
+  ).textContent =
+    "Update check-in";
+
+
+  document.getElementById(
+    "cancelNutritionEdit"
+  ).style.display =
+    "inline-block";
+
+
+  showView(
+    "nutrition"
+  );
+}
+
+
+/* =============================
+   WEIGHT
+============================= */
+
+function resetWeightForm() {
+
+  weightEditingId =
+    null;
+
+
+  document.getElementById(
+    "weightForm"
+  ).reset();
+
+
+  document.getElementById(
+    "weightDate"
+  ).value =
+    isoToday();
+
+
+  if (
+    appData
+  ) {
+
+    document.getElementById(
+      "weightValue"
+    ).value =
+      latestWeight();
+
+  }
+
+
+  document.getElementById(
+    "weightFormTitle"
+  ).textContent =
+    "Weight progress";
+
+
+  document.getElementById(
+    "weightSave"
+  ).textContent =
+    "Save weigh-in";
+
+
+  document.getElementById(
+    "cancelWeightEdit"
+  ).style.display =
+    "none";
+}
+
+
+document.getElementById(
+  "weightForm"
+).addEventListener(
+  "submit",
+  async event => {
+
+    event.preventDefault();
+
+
+    const date =
+      document.getElementById(
+        "weightDate"
+      ).value;
+
+
+    const weight =
+      Number(
+        document.getElementById(
+          "weightValue"
+        ).value
+      );
+
+
+    const success =
+      await mutateAndSync(
+        weightEditingId
+          ? "Edit weigh-in"
+          : "Add weigh-in",
+
+        data => {
+
+          if (
+            weightEditingId
+          ) {
+
+            data.weights =
+              data.weights.map(
+                entry => {
+
+                  if (
+                    entry.id !==
+                    weightEditingId
+                  ) {
+                    return entry;
+                  }
+
+
+                  if (
+                    entry.baseline
+                  ) {
+
+                    data.profile.startWeight =
+                      weight;
+
+                  }
+
+
+                  return {
+                    ...entry,
+                    date,
+                    weight
+                  };
+
+                }
+              );
+
+          }
+
+          else {
+
+            data.weights.push({
+
+              id:
+                makeId(),
+
+              date,
+              weight
+
+            });
+
+          }
+
+        }
+      );
+
+
+    if (
+      success
+    ) {
+      resetWeightForm();
+    }
+
+  }
+);
+
+
+document.getElementById(
+  "cancelWeightEdit"
+).addEventListener(
+  "click",
+  resetWeightForm
+);
+
+
+function renderWeightHistory() {
+
+  const box =
+    document.getElementById(
+      "weightHistory"
+    );
+
+
+  const weights =
+    sortedWeights()
+      .slice()
+      .reverse();
+
+
+  box.innerHTML =
+    weights.map(
+      entry => `
+
+        <article class="card item">
+
+          <div class="item-top">
+
+            <div>
+
+              <div class="item-date">
+                ${formatDate(entry.date)}
+              </div>
+
+              <div class="item-title">
+                ${Number(entry.weight).toFixed(1)} kg
+              </div>
+
+            </div>
+
+
+            ${
+              entry.baseline
+
+                ? `
+                  <div class="item-badge">
+                    Starting weight
+                  </div>
+                `
+
+                : ""
+            }
+
+          </div>
+
+
+          <div class="item-actions">
+
+            <button
+              class="secondary small"
+              data-weight-edit="${entry.id}"
+            >
+              Edit
+            </button>
+
+
+            ${
+              entry.baseline
+
+                ? ""
+
+                : `
+                  <button
+                    class="delete small"
+                    data-weight-delete="${entry.id}"
+                  >
+                    Delete
+                  </button>
+                `
+            }
+
+          </div>
+
+        </article>
+      `
+    )
+    .join("");
+}
+
+
+document.getElementById(
+  "weightHistory"
+).addEventListener(
+  "click",
+  async event => {
+
+    const edit =
+      event.target.closest(
+        "[data-weight-edit]"
+      );
+
+
+    const remove =
+      event.target.closest(
+        "[data-weight-delete]"
+      );
+
+
+    if (edit) {
+
+      editWeight(
+        edit.dataset.weightEdit
+      );
+
+    }
+
+
+    if (remove) {
+
+      const id =
+        remove.dataset.weightDelete;
+
+
+      const entry =
+        appData.weights.find(
+          item =>
+            item.id === id
+        );
+
+
+      if (
+        entry &&
+        confirm(
+          `Delete the ${entry.weight} kg weigh-in from ${formatDate(entry.date)}?`
+        )
+      ) {
+
+        await mutateAndSync(
+          "Delete weigh-in",
+          data => {
+
+            data.weights =
+              data.weights.filter(
+                item =>
+                  item.id !== id
+              );
+
+          }
+        );
+
+      }
+
+    }
+
+  }
+);
+
+
+function editWeight(id) {
+
+  const entry =
+    appData.weights.find(
+      item =>
+        item.id === id
+    );
+
+
+  if (!entry) {
+    return;
+  }
+
+
+  weightEditingId =
+    id;
+
+
+  document.getElementById(
+    "weightDate"
+  ).value =
+    entry.date;
+
+
+  document.getElementById(
+    "weightValue"
+  ).value =
+    entry.weight;
+
+
+  document.getElementById(
+    "weightFormTitle"
+  ).textContent =
+    "Edit weigh-in";
+
+
+  document.getElementById(
+    "weightSave"
+  ).textContent =
+    "Update weigh-in";
+
+
+  document.getElementById(
+    "cancelWeightEdit"
+  ).style.display =
+    "inline-block";
+
+
+  showView(
+    "weight"
+  );
+}
+
+
+/* =============================
+   GOAL SETTINGS
+============================= */
+
+function renderGoalForm() {
+
+  document.getElementById(
+    "targetWeightInput"
+  ).value =
+    appData.profile.targetWeight;
+
+
+  document.getElementById(
+    "targetDateInput"
+  ).value =
+    appData.profile.targetDate;
+
+
+  document.getElementById(
+    "workoutGoalInput"
+  ).value =
+    appData.profile.workoutGoal;
+}
+
+
+document.getElementById(
+  "goalForm"
+).addEventListener(
+  "submit",
+  async event => {
+
+    event.preventDefault();
+
+
+    const targetWeight =
+      Number(
+        document.getElementById(
+          "targetWeightInput"
+        ).value
+      );
+
+
+    const targetDate =
+      document.getElementById(
+        "targetDateInput"
+      ).value;
+
+
+    const workoutGoal =
+      Number(
+        document.getElementById(
+          "workoutGoalInput"
+        ).value
+      );
+
+
+    await mutateAndSync(
+      "Update tracker goals",
+      data => {
+
+        data.profile.targetWeight =
+          targetWeight;
+
+        data.profile.targetDate =
+          targetDate;
+
+        data.profile.workoutGoal =
+          workoutGoal;
+
+      }
+    );
+
+  }
+);
+
+
+/* =============================
+   RENDER ALL
+============================= */
+
+function renderAll() {
+
+  if (!appData) {
+    return;
+  }
+
+  renderRepositoryPrivacy();
+  renderDashboard();
+  renderWorkoutHistory();
+  renderNutritionHistory();
+  renderWeightHistory();
+  renderGoalForm();
+}
+
+
+/* =============================
+   GITHUB SETTINGS EVENTS
+============================= */
+
+document.getElementById(
+  "githubSettingsButton"
+).addEventListener(
+  "click",
+  openGithubModal
+);
+
+
+document.getElementById(
+  "githubConfigForm"
+).addEventListener(
+  "submit",
+  async event => {
+
+    event.preventDefault();
+
+
+    githubConfig = {
+
+      owner:
+        document.getElementById(
+          "githubOwner"
+        ).value.trim(),
+
+      repo:
+        document.getElementById(
+          "githubRepo"
+        ).value.trim(),
+
+      branch:
+        document.getElementById(
+          "githubBranch"
+        ).value.trim(),
+
+      token:
+        document.getElementById(
+          "githubToken"
+        ).value.trim(),
+
+      publicConfirmed:
+        false
+
+    };
+
+
+    saveGithubConfig(
+      githubConfig
+    );
+
+
+    await connectAndLoad();
+
+  }
+);
+
+
+document.getElementById(
+  "forgetGithubButton"
+).addEventListener(
+  "click",
+  () => {
+
+    if (
+      !confirm(
+        "Forget the saved GitHub connection on this device? " +
+        "This does not delete training-data.json from GitHub."
+      )
+    ) {
+      return;
+    }
+
+
+    localStorage.removeItem(
+      CONFIG_KEY
+    );
+
+
+    githubConfig =
+      null;
+
+    repositoryInfo =
+      null;
+
+    remoteFileSha =
+      null;
+
+
+    toast(
+      "GitHub connection forgotten."
+    );
+
+
+    openGithubModal();
+
+  }
+);
+
+
+document.getElementById(
+  "reloadGithubButton"
+).addEventListener(
+  "click",
+  async () => {
+
+    if (!githubConfig) {
+
+      openGithubModal();
+      return;
+
+    }
+
+
+    if (
+      !confirm(
+        "Reload the latest training-data.json from GitHub? " +
+        "The current in-memory copy will be replaced."
+      )
+    ) {
+      return;
+    }
+
+
+    showLoading(
+      "Reloading from GitHub…",
+      "Fetching the latest training-data.json"
+    );
+
+
+    try {
+
+      await verifyGithubConnection();
+
+      await loadDataFromGithub();
+
+      renderAll();
+
+      resetWorkoutForm();
+      resetNutritionForm();
+      resetWeightForm();
+
+      toast(
+        "Latest GitHub data loaded."
+      );
+
+    }
+
+    catch (error) {
+
+      console.error(error);
+
+      alert(
+        error.message ||
+        "Could not reload GitHub data."
+      );
+
+    }
+
+    finally {
+      hideLoading();
+    }
+
+  }
+);
+
+
+/* =============================
+   INITIALIZE
+============================= */
+
+async function initialize() {
+
+  githubConfig =
+    loadGithubConfig();
+
+
+  if (!githubConfig) {
+
+    setSyncStatus(
+      "Setup required"
+    );
+
+    openGithubModal();
+
+    return;
+  }
+
+
+  await connectAndLoad();
+}
+
+
+initialize();
+</script>
+
+</body>
+</html>
