@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-09-25T21:31:07.147Z",
+  "updatedAt": "2026-09-25T21:31:39.021Z",
   "profile": {
     "startWeight": 84,
     "targetWeight": 60,
@@ -8,7 +8,17 @@
     "workoutGoal": 2,
     "startDate": "2026-09-25"
   },
-  "workouts": [],
+  "workouts": [
+    {
+      "id": "3a006681-9dae-4845-82e9-919e1d561097",
+      "date": "2026-09-21",
+      "type": "TRX / small-group training",
+      "duration": 45,
+      "effort": 4,
+      "notes": "A lot of focus on quads at the end, but doable overall although challenging",
+      "createdAt": "2026-09-25T21:31:39.019Z"
+    }
+  ],
   "weights": [
     {
       "id": "998c27ae-de38-472d-b289-4bddaee4f1bc",
