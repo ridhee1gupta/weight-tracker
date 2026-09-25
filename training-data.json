@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 2,
+  "updatedAt": "2026-09-25T21:31:07.147Z",
+  "profile": {
+    "startWeight": 84,
+    "targetWeight": 60,
+    "targetDate": "2027-02-28",
+    "workoutGoal": 2,
+    "startDate": "2026-09-25"
+  },
+  "workouts": [],
+  "weights": [
+    {
+      "id": "998c27ae-de38-472d-b289-4bddaee4f1bc",
+      "date": "2026-09-25",
+      "weight": 84,
+      "baseline": true
+    }
+  ],
+  "nutrition": []
+}
