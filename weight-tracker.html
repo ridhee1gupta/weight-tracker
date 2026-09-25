@@ -1,0 +1,4352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Movement & Weight Tracker</title>
+
+<style>
+:root{
+  --navy:#153940;
+  --navy2:#0f2d33;
+  --green:#2f705b;
+  --green2:#478871;
+  --ocean:#337f92;
+  --cream:#f7f3ec;
+  --white:#fff;
+  --text:#193235;
+  --muted:#687b7d;
+  --border:#dbe5e2;
+  --sage:#e1eee5;
+  --blue:#e0f0f4;
+  --soft:#f5f8f7;
+  --danger:#9a4949;
+  --dangerBg:#faeaea;
+  --shadow:0 8px 26px rgba(20,55,62,.08);
+  --radius:20px;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  background:var(--cream);
+  color:var(--text);
+  font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+
+.app{
+  min-height:100vh;
+  padding-bottom:96px;
+}
+
+header{
+  padding:28px 20px 42px;
+  background:linear-gradient(135deg,var(--navy2),#1a6070,var(--green));
+  color:white;
+}
+
+.header-inner{
+  width:min(1080px,100%);
+  margin:auto;
+}
+
+.eyebrow{
+  margin:0 0 5px;
+  opacity:.75;
+  font-size:.76rem;
+  font-weight:800;
+  letter-spacing:.11em;
+  text-transform:uppercase;
+}
+
+h1{
+  margin:0;
+  font-size:clamp(1.8rem,6vw,2.7rem);
+  letter-spacing:-.04em;
+}
+
+.header-pills{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:17px;
+}
+
+.pill{
+  padding:8px 12px;
+  border:1px solid rgba(255,255,255,.22);
+  border-radius:999px;
+  background:rgba(255,255,255,.1);
+  font-size:.82rem;
+}
+
+main{
+  width:min(1080px,calc(100% - 28px));
+  margin:-18px auto 0;
+}
+
+.view{display:none}
+.view.active{display:block}
+
+.card{
+  background:var(--white);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+}
+
+.section{
+  padding:20px;
+  margin-bottom:16px;
+}
+
+.page-title{
+  margin:5px 2px 18px;
+}
+
+.page-title h2{
+  margin:0 0 5px;
+  font-size:1.6rem;
+}
+
+.page-title p{
+  margin:0;
+  color:var(--muted);
+  line-height:1.5;
+}
+
+.hero{
+  padding:22px;
+  margin-bottom:16px;
+}
+
+.hero-top{
+  display:flex;
+  justify-content:space-between;
+  gap:15px;
+  align-items:flex-start;
+}
+
+.hero-label,
+.stat-label{
+  color:var(--muted);
+  font-size:.74rem;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+}
+
+.weight-number{
+  margin:5px 0;
+  font-size:clamp(2.6rem,10vw,4rem);
+  font-weight:900;
+  line-height:1;
+  letter-spacing:-.06em;
+}
+
+.weight-number small{
+  font-size:1rem;
+  color:var(--muted);
+  letter-spacing:0;
+}
+
+.goal-chip{
+  padding:8px 11px;
+  background:var(--sage);
+  color:var(--green);
+  border-radius:999px;
+  font-size:.78rem;
+  font-weight:800;
+}
+
+.progress-track{
+  height:13px;
+  margin-top:18px;
+  background:#e8efed;
+  border-radius:999px;
+  overflow:hidden;
+}
+
+.progress-fill{
+  height:100%;
+  width:0;
+  background:linear-gradient(90deg,var(--ocean),var(--green2));
+  border-radius:inherit;
+  transition:.3s;
+}
+
+.progress-caption{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  margin-top:8px;
+  color:var(--muted);
+  font-size:.79rem;
+}
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:11px;
+  margin-bottom:16px;
+}
+
+.stat{
+  padding:17px;
+  min-height:120px;
+}
+
+.stat-value{
+  margin:10px 0 5px;
+  font-size:1.65rem;
+  line-height:1;
+  font-weight:900;
+  letter-spacing:-.04em;
+}
+
+.stat-note{
+  color:var(--muted);
+  font-size:.78rem;
+  line-height:1.4;
+}
+
+.notice{
+  padding:16px;
+  margin-bottom:16px;
+  border-radius:16px;
+  background:var(--sage);
+  border:1px solid #cde1d2;
+  color:#335c4d;
+  font-size:.87rem;
+  line-height:1.5;
+}
+
+.section-title{
+  margin:0;
+  font-size:1.2rem;
+}
+
+.section-text{
+  margin:5px 0 17px;
+  color:var(--muted);
+  font-size:.87rem;
+  line-height:1.5;
+}
+
+.chart-wrap{
+  width:100%;
+  overflow-x:auto;
+}
+
+#weightChart{
+  display:block;
+  width:100%;
+  min-width:620px;
+  height:auto;
+}
+
+.routine{
+  display:grid;
+  gap:10px;
+}
+
+.routine-row{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  padding:14px;
+  background:var(--soft);
+  border-radius:13px;
+}
+
+.routine-row strong{
+  display:block;
+  margin-bottom:3px;
+}
+
+.routine-row span{
+  color:var(--muted);
+  font-size:.8rem;
+}
+
+.routine-status{
+  flex:0 0 auto;
+  font-size:.8rem;
+  font-weight:800;
+  color:var(--green);
+}
+
+.nutrition-summary{
+  display:grid;
+  gap:8px;
+}
+
+.nutrition-summary-row{
+  padding:12px 14px;
+  background:var(--soft);
+  border-radius:12px;
+  font-size:.85rem;
+}
+
+.nutrition-summary-row strong{
+  display:block;
+  margin-bottom:3px;
+}
+
+.nutrition-summary-row span{
+  color:var(--muted);
+}
+
+.form-grid{
+  display:grid;
+  gap:17px;
+}
+
+.field{
+  display:grid;
+  gap:7px;
+}
+
+.field label{
+  font-size:.85rem;
+  font-weight:800;
+}
+
+.field small{
+  color:var(--muted);
+  font-size:.75rem;
+  line-height:1.4;
+}
+
+input,
+textarea,
+select{
+  width:100%;
+  padding:13px 14px;
+  border:1px solid #cbd8d5;
+  border-radius:12px;
+  background:white;
+  color:var(--text);
+}
+
+input,
+select{
+  min-height:48px;
+}
+
+textarea{
+  min-height:105px;
+  resize:vertical;
+}
+
+.effort-grid{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:7px;
+}
+
+.effort-grid input{
+  position:absolute;
+  opacity:0;
+}
+
+.effort-grid label{
+  min-height:50px;
+  display:grid;
+  place-items:center;
+  border:1px solid #cbd8d5;
+  border-radius:11px;
+  cursor:pointer;
+}
+
+.effort-grid input:checked+label{
+  border:2px solid var(--ocean);
+  background:var(--blue);
+}
+
+.check-list{
+  display:grid;
+  gap:9px;
+}
+
+.check-item{
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  padding:12px;
+  background:var(--soft);
+  border-radius:12px;
+}
+
+.check-item input{
+  width:20px;
+  height:20px;
+  min-height:auto;
+  margin-top:1px;
+  flex:0 0 auto;
+}
+
+.check-item label{
+  font-weight:650;
+  font-size:.86rem;
+  line-height:1.4;
+}
+
+.actions{
+  display:flex;
+  gap:9px;
+  margin-top:20px;
+}
+
+.primary,
+.secondary,
+.delete{
+  min-height:46px;
+  padding:0 17px;
+  border-radius:12px;
+  font-weight:800;
+}
+
+.primary{
+  flex:1;
+  border:0;
+  background:var(--green);
+  color:white;
+}
+
+.secondary{
+  background:white;
+  color:var(--text);
+  border:1px solid #cbd8d5;
+}
+
+.delete{
+  border:0;
+  color:var(--danger);
+  background:var(--dangerBg);
+}
+
+.list{
+  display:grid;
+  gap:11px;
+  margin-top:16px;
+}
+
+.item{
+  padding:17px;
+}
+
+.item-top{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+}
+
+.item-date{
+  color:var(--muted);
+  font-size:.78rem;
+}
+
+.item-title{
+  margin-top:3px;
+  font-size:1.12rem;
+  font-weight:850;
+}
+
+.item-badge{
+  flex:0 0 auto;
+  height:max-content;
+  padding:6px 9px;
+  background:var(--sage);
+  color:var(--green);
+  border-radius:999px;
+  font-size:.73rem;
+  font-weight:800;
+}
+
+.item-meta{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px 15px;
+  margin-top:10px;
+  color:var(--muted);
+  font-size:.8rem;
+}
+
+.item-notes{
+  margin:10px 0 0;
+  color:#425e61;
+  font-size:.86rem;
+  line-height:1.5;
+  white-space:pre-wrap;
+}
+
+.item-actions{
+  display:flex;
+  gap:8px;
+  margin-top:13px;
+}
+
+.small{
+  min-height:36px;
+  padding:0 12px;
+  border-radius:9px;
+  font-size:.76rem;
+  font-weight:800;
+}
+
+.tag-wrap{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-top:10px;
+}
+
+.tag{
+  padding:6px 8px;
+  background:var(--soft);
+  border-radius:999px;
+  color:#4d6669;
+  font-size:.74rem;
+}
+
+.empty{
+  padding:30px 20px;
+  text-align:center;
+}
+
+.empty h3{
+  margin:0 0 6px;
+}
+
+.empty p{
+  margin:0;
+  color:var(--muted);
+}
+
+.goal-settings{
+  margin-top:20px;
+  padding-top:18px;
+  border-top:1px solid var(--border);
+}
+
+.goal-settings h3{
+  margin:0 0 14px;
+}
+
+.bottom-nav{
+  position:fixed;
+  z-index:30;
+  left:50%;
+  bottom:12px;
+  transform:translateX(-50%);
+  width:min(600px,calc(100% - 22px));
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  padding:7px;
+  background:rgba(16,46,52,.97);
+  border-radius:22px;
+  box-shadow:0 10px 35px rgba(16,46,52,.24);
+}
+
+.nav{
+  min-height:57px;
+  padding:5px 2px;
+  border:0;
+  border-radius:16px;
+  background:transparent;
+  color:rgba(255,255,255,.62);
+  font-size:.69rem;
+  font-weight:750;
+}
+
+.nav span{
+  display:block;
+  margin-bottom:2px;
+  font-size:1.15rem;
+}
+
+.nav.active{
+  color:white;
+  background:rgba(255,255,255,.13);
+}
+
+.toast{
+  position:fixed;
+  z-index:100;
+  left:50%;
+  bottom:92px;
+  transform:translate(-50%,15px);
+  padding:11px 16px;
+  color:white;
+  background:var(--navy2);
+  border-radius:999px;
+  opacity:0;
+  pointer-events:none;
+  transition:.2s;
+  font-size:.83rem;
+}
+
+.toast.show{
+  opacity:1;
+  transform:translate(-50%,0);
+}
+
+@media(min-width:700px){
+  header{
+    padding-top:38px;
+    padding-bottom:50px;
+  }
+
+  .stats{
+    grid-template-columns:repeat(4,1fr);
+  }
+
+  .form-grid.two{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .full{
+    grid-column:1/-1;
+  }
+
+  .two-col{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<header>
+  <div class="header-inner">
+
+    <p class="eyebrow">
+      Movement, nutrition & weight
+    </p>
+
+    <h1 id="headerTitle">
+      Your progress dashboard
+    </h1>
+
+    <div class="header-pills">
+      <div class="pill">
+        Start · 84 kg
+      </div>
+
+      <div class="pill" id="goalPill">
+        Goal · 60 kg
+      </div>
+
+      <div class="pill" id="targetDateHeader">
+        Target · Feb 2027
+      </div>
+    </div>
+
+  </div>
+</header>
+
+<main>
+
+<section class="view active" id="dashboardView">
+
+  <section class="card hero">
+
+    <div class="hero-top">
+
+      <div>
+
+        <div class="hero-label">
+          Current weight
+        </div>
+
+        <div class="weight-number">
+          <span id="currentWeight">84</span>
+          <small>kg</small>
+        </div>
+
+        <div
+          id="weightChangeText"
+          class="section-text"
+        >
+          Starting point
+        </div>
+
+      </div>
+
+      <div class="goal-chip" id="heroGoal">
+        Goal 60 kg
+      </div>
+
+    </div>
+
+    <div class="progress-track">
+      <div
+        class="progress-fill"
+        id="goalProgress"
+      ></div>
+    </div>
+
+    <div class="progress-caption">
+      <span>Start</span>
+      <span id="progressCaption">
+        0% toward goal
+      </span>
+      <span>Goal</span>
+    </div>
+
+  </section>
+
+
+  <section class="stats">
+
+    <article class="card stat">
+
+      <div class="stat-label">
+        Remaining
+      </div>
+
+      <div class="stat-value">
+        <span id="remainingWeight">24</span>
+        kg
+      </div>
+
+      <div class="stat-note">
+        to selected target
+      </div>
+
+    </article>
+
+
+    <article class="card stat">
+
+      <div class="stat-label">
+        Workouts this week
+      </div>
+
+      <div class="stat-value">
+        <span id="weeklyWorkouts">0</span>/<span id="workoutGoal">2</span>
+      </div>
+
+      <div class="stat-note">
+        structured sessions
+      </div>
+
+    </article>
+
+
+    <article class="card stat">
+
+      <div class="stat-label">
+        Minutes this week
+      </div>
+
+      <div
+        class="stat-value"
+        id="weeklyMinutes"
+      >
+        0
+      </div>
+
+      <div class="stat-note">
+        logged movement
+      </div>
+
+    </article>
+
+
+    <article class="card stat">
+
+      <div class="stat-label">
+        Nutrition check-ins
+      </div>
+
+      <div
+        class="stat-value"
+        id="nutritionCheckins"
+      >
+        0
+      </div>
+
+      <div class="stat-note">
+        this week; no score
+      </div>
+
+    </article>
+
+  </section>
+
+
+  <div class="notice">
+    Your February 2027 date is treated as a preference,
+    not a deadline. The app does not turn missed workouts,
+    weigh-ins, or nutrition check-ins into extra exercise
+    or food restriction.
+  </div>
+
+
+  <section class="card section">
+
+    <h2 class="section-title">
+      Your weekly routine
+    </h2>
+
+    <p class="section-text">
+      The default routine is one TRX / small-group session
+      and one Burn & Firm Pilates session each week.
+    </p>
+
+    <div class="routine">
+
+      <div class="routine-row">
+
+        <div>
+          <strong>
+            TRX / small-group training
+          </strong>
+
+          <span>
+            1 session each week
+          </span>
+        </div>
+
+        <div
+          class="routine-status"
+          id="trxStatus"
+        >
+          Not logged
+        </div>
+
+      </div>
+
+
+      <div class="routine-row">
+
+        <div>
+          <strong>
+            Burn & Firm Pilates
+          </strong>
+
+          <span>
+            1 session each week
+          </span>
+        </div>
+
+        <div
+          class="routine-status"
+          id="pilatesStatus"
+        >
+          Not logged
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <section class="card section">
+
+    <h2 class="section-title">
+      Weight trend
+    </h2>
+
+    <p class="section-text">
+      The chart uses weigh-ins only. It does not infer
+      weight change from workouts or nutrition check-ins.
+    </p>
+
+    <div class="chart-wrap">
+
+      <svg
+        id="weightChart"
+        viewBox="0 0 760 300"
+        aria-label="Weight trend chart"
+      ></svg>
+
+    </div>
+
+  </section>
+
+
+  <section class="card section">
+
+    <h2 class="section-title">
+      Recent nutrition pattern
+    </h2>
+
+    <p class="section-text">
+      This is descriptive, not a grade. Nothing here
+      is labelled good or bad.
+    </p>
+
+    <div
+      class="nutrition-summary"
+      id="nutritionSummary"
+    ></div>
+
+  </section>
+
+</section>
+
+
+<section class="view" id="workoutView">
+
+  <div class="page-title">
+
+    <h2 id="workoutFormTitle">
+      Log a workout
+    </h2>
+
+    <p>
+      Track activity without calorie-burn estimates
+      or compensatory targets.
+    </p>
+
+  </div>
+
+
+  <section class="card section">
+
+    <form id="workoutForm">
+
+      <div class="form-grid two">
+
+        <div class="field">
+
+          <label for="workoutDate">
+            Date
+          </label>
+
+          <input
+            id="workoutDate"
+            type="date"
+            required
+          >
+
+        </div>
+
+
+        <div class="field">
+
+          <label for="workoutType">
+            Workout
+          </label>
+
+          <select
+            id="workoutType"
+            required
+          >
+            <option value="">
+              Choose activity
+            </option>
+
+            <option>
+              TRX / small-group training
+            </option>
+
+            <option>
+              Burn & Firm Pilates
+            </option>
+
+            <option>
+              Walking
+            </option>
+
+            <option>
+              Cardio
+            </option>
+
+            <option>
+              Strength training
+            </option>
+
+            <option>
+              Yoga
+            </option>
+
+            <option>
+              Other
+            </option>
+          </select>
+
+        </div>
+
+
+        <div class="field">
+
+          <label for="duration">
+            Duration
+          </label>
+
+          <input
+            id="duration"
+            type="number"
+            min="1"
+            step="1"
+            inputmode="numeric"
+            placeholder="45"
+            required
+          >
+
+          <small>
+            Minutes
+          </small>
+
+        </div>
+
+
+        <div class="field">
+
+          <label>
+            Perceived effort
+          </label>
+
+          <div class="effort-grid">
+
+            <div>
+              <input
+                type="radio"
+                name="effort"
+                id="e1"
+                value="1"
+                required
+              >
+              <label for="e1">1</label>
+            </div>
+
+            <div>
+              <input
+                type="radio"
+                name="effort"
+                id="e2"
+                value="2"
+              >
+              <label for="e2">2</label>
+            </div>
+
+            <div>
+              <input
+                type="radio"
+                name="effort"
+                id="e3"
+                value="3"
+              >
+              <label for="e3">3</label>
+            </div>
+
+            <div>
+              <input
+                type="radio"
+                name="effort"
+                id="e4"
+                value="4"
+              >
+              <label for="e4">4</label>
+            </div>
+
+            <div>
+              <input
+                type="radio"
+                name="effort"
+                id="e5"
+                value="5"
+              >
+              <label for="e5">5</label>
+            </div>
+
+          </div>
+
+          <small>
+            1 = very easy · 5 = very hard
+          </small>
+
+        </div>
+
+
+        <div class="field full">
+
+          <label for="workoutNotes">
+            Notes
+          </label>
+
+          <textarea
+            id="workoutNotes"
+            placeholder="How did the workout feel?"
+          ></textarea>
+
+        </div>
+
+      </div>
+
+
+      <div class="actions">
+
+        <button
+          class="primary"
+          type="submit"
+          id="workoutSave"
+        >
+          Save workout
+        </button>
+
+        <button
+          class="secondary"
+          type="button"
+          id="cancelWorkoutEdit"
+          style="display:none"
+        >
+          Cancel
+        </button>
+
+      </div>
+
+    </form>
+
+  </section>
+
+
+  <div class="page-title">
+
+    <h2>
+      Workout history
+    </h2>
+
+    <p>
+      Edit or delete any logged session.
+    </p>
+
+  </div>
+
+  <div
+    class="list"
+    id="workoutHistory"
+  ></div>
+
+</section>
+
+
+<section class="view" id="nutritionView">
+
+  <div class="page-title">
+
+    <h2 id="nutritionFormTitle">
+      Nutrition check-in
+    </h2>
+
+    <p>
+      One optional check-in for the day. No meals,
+      calories, macros, streaks, or food scores.
+    </p>
+
+  </div>
+
+
+  <section class="card section">
+
+    <form id="nutritionForm">
+
+      <div class="form-grid two">
+
+        <div class="field">
+
+          <label for="nutritionDate">
+            Date
+          </label>
+
+          <input
+            id="nutritionDate"
+            type="date"
+            required
+          >
+
+        </div>
+
+
+        <div class="field">
+
+          <label for="mealRhythm">
+            How did eating rhythm feel?
+          </label>
+
+          <select
+            id="mealRhythm"
+            required
+          >
+            <option value="">
+              Choose one
+            </option>
+
+            <option>
+              Regular enough for me
+            </option>
+
+            <option>
+              A little irregular
+            </option>
+
+            <option>
+              Very irregular
+            </option>
+
+            <option>
+              Not sure / prefer not to say
+            </option>
+          </select>
+
+        </div>
+
+
+        <div class="field">
+
+          <label for="energyLevel">
+            How was your energy?
+          </label>
+
+          <select
+            id="energyLevel"
+            required
+          >
+            <option value="">
+              Choose one
+            </option>
+
+            <option>
+              Low
+            </option>
+
+            <option>
+              Variable
+            </option>
+
+            <option>
+              Steady
+            </option>
+
+            <option>
+              High
+            </option>
+
+            <option>
+              Not sure / prefer not to say
+            </option>
+          </select>
+
+        </div>
+
+
+        <div class="field full">
+
+          <label>
+            Supportive patterns you noticed
+          </label>
+
+          <small>
+            Select any that happened. These are not requirements
+            and the app does not total them into a score.
+          </small>
+
+
+          <div class="check-list">
+
+            <div class="check-item">
+
+              <input
+                type="checkbox"
+                id="hydration"
+                value="Drank fluids regularly"
+              >
+
+              <label for="hydration">
+                Drank fluids regularly
+              </label>
+
+            </div>
+
+
+            <div class="check-item">
+
+              <input
+                type="checkbox"
+                id="protein"
+                value="Included a protein source"
+              >
+
+              <label for="protein">
+                Included a protein source
+              </label>
+
+            </div>
+
+
+            <div class="check-item">
+
+              <input
+                type="checkbox"
+                id="produce"
+                value="Had fruit or vegetables"
+              >
+
+              <label for="produce">
+                Had fruit or vegetables
+              </label>
+
+            </div>
+
+
+            <div class="check-item">
+
+              <input
+                type="checkbox"
+                id="workoutFuel"
+                value="Ate around exercise when needed"
+              >
+
+              <label for="workoutFuel">
+                Ate before or after exercise when I needed it
+              </label>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="field full">
+
+          <label for="nutritionNotes">
+            Optional note
+          </label>
+
+          <textarea
+            id="nutritionNotes"
+            placeholder="Anything useful to remember about appetite, routine, energy, convenience, or how eating felt."
+          ></textarea>
+
+        </div>
+
+      </div>
+
+
+      <div class="actions">
+
+        <button
+          class="primary"
+          type="submit"
+          id="nutritionSave"
+        >
+          Save check-in
+        </button>
+
+        <button
+          class="secondary"
+          type="button"
+          id="cancelNutritionEdit"
+          style="display:none"
+        >
+          Cancel
+        </button>
+
+      </div>
+
+    </form>
+
+  </section>
+
+
+  <div class="page-title">
+
+    <h2>
+      Recent check-ins
+    </h2>
+
+    <p>
+      Use these to notice patterns, not to judge individual days.
+    </p>
+
+  </div>
+
+  <div
+    class="list"
+    id="nutritionHistory"
+  ></div>
+
+</section>
+
+
+<section class="view" id="weightView">
+
+  <div class="page-title">
+
+    <h2 id="weightFormTitle">
+      Weight progress
+    </h2>
+
+    <p>
+      Log weight only as often as it feels useful.
+      The app does not require daily weigh-ins.
+    </p>
+
+  </div>
+
+
+  <div class="two-col">
+
+    <section class="card section">
+
+      <form id="weightForm">
+
+        <div class="form-grid">
+
+          <div class="field">
+
+            <label for="weightDate">
+              Date
+            </label>
+
+            <input
+              id="weightDate"
+              type="date"
+              required
+            >
+
+          </div>
+
+
+          <div class="field">
+
+            <label for="weightValue">
+              Weight
+            </label>
+
+            <input
+              id="weightValue"
+              type="number"
+              min="30"
+              max="300"
+              step="0.1"
+              inputmode="decimal"
+              required
+            >
+
+            <small>
+              Kilograms
+            </small>
+
+          </div>
+
+        </div>
+
+
+        <div class="actions">
+
+          <button
+            class="primary"
+            type="submit"
+            id="weightSave"
+          >
+            Save weigh-in
+          </button>
+
+          <button
+            class="secondary"
+            type="button"
+            id="cancelWeightEdit"
+            style="display:none"
+          >
+            Cancel
+          </button>
+
+        </div>
+
+      </form>
+
+
+      <div class="goal-settings">
+
+        <h3>
+          Goal settings
+        </h3>
+
+        <form id="goalForm">
+
+          <div class="form-grid">
+
+            <div class="field">
+
+              <label for="targetWeightInput">
+                Target weight
+              </label>
+
+              <input
+                id="targetWeightInput"
+                type="number"
+                min="30"
+                max="300"
+                step="0.1"
+              >
+
+            </div>
+
+
+            <div class="field">
+
+              <label for="targetDateInput">
+                Target date
+              </label>
+
+              <input
+                id="targetDateInput"
+                type="date"
+              >
+
+            </div>
+
+
+            <div class="field">
+
+              <label for="workoutGoalInput">
+                Structured workouts per week
+              </label>
+
+              <input
+                id="workoutGoalInput"
+                type="number"
+                min="1"
+                max="14"
+                step="1"
+              >
+
+            </div>
+
+          </div>
+
+
+          <div class="actions">
+
+            <button
+              class="primary"
+              type="submit"
+            >
+              Update goal
+            </button>
+
+          </div>
+
+        </form>
+
+      </div>
+
+    </section>
+
+
+    <div>
+      <div
+        class="list"
+        id="weightHistory"
+      ></div>
+    </div>
+
+  </div>
+
+</section>
+
+</main>
+
+
+<nav class="bottom-nav">
+
+  <button
+    class="nav active"
+    data-view="dashboard"
+  >
+    <span>▦</span>
+    Dashboard
+  </button>
+
+  <button
+    class="nav"
+    data-view="workout"
+  >
+    <span>＋</span>
+    Workout
+  </button>
+
+  <button
+    class="nav"
+    data-view="nutrition"
+  >
+    <span>○</span>
+    Nutrition
+  </button>
+
+  <button
+    class="nav"
+    data-view="weight"
+  >
+    <span>↘</span>
+    Weight
+  </button>
+
+</nav>
+
+
+<div
+  class="toast"
+  id="toast"
+></div>
+
+</div>
+
+
+<script>
+const KEYS = {
+  profile: "weight-app-profile-v1",
+  workouts: "weight-app-workouts-v1",
+  weights: "weight-app-weighins-v1",
+  nutrition: "weight-app-nutrition-v1"
+};
+
+let workoutEditingId = null;
+let nutritionEditingId = null;
+let weightEditingId = null;
+
+
+function isoToday() {
+
+  const d = new Date();
+
+  const y =
+    d.getFullYear();
+
+  const m =
+    String(
+      d.getMonth() + 1
+    ).padStart(2, "0");
+
+  const day =
+    String(
+      d.getDate()
+    ).padStart(2, "0");
+
+  return `${y}-${m}-${day}`;
+}
+
+
+function parseDate(value) {
+
+  const [
+    y,
+    m,
+    d
+  ] =
+    value
+      .split("-")
+      .map(Number);
+
+  return new Date(
+    y,
+    m - 1,
+    d
+  );
+}
+
+
+function formatDate(value) {
+
+  return new Intl.DateTimeFormat(
+    undefined,
+    {
+      month: "short",
+      day: "numeric",
+      year: "numeric"
+    }
+  ).format(
+    parseDate(value)
+  );
+}
+
+
+function mondayOfCurrentWeek() {
+
+  const now =
+    new Date();
+
+  const day =
+    now.getDay();
+
+  const difference =
+    day === 0
+      ? -6
+      : 1 - day;
+
+  return new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate() + difference
+  );
+}
+
+
+function id() {
+
+  if (
+    window.crypto &&
+    crypto.randomUUID
+  ) {
+    return crypto.randomUUID();
+  }
+
+  return (
+    Date.now().toString(36) +
+    Math.random().toString(36).slice(2)
+  );
+}
+
+
+function read(key) {
+
+  try {
+
+    const data =
+      JSON.parse(
+        localStorage.getItem(key)
+      );
+
+    return Array.isArray(data)
+      ? data
+      : [];
+
+  }
+
+  catch {
+    return [];
+  }
+}
+
+
+function write(
+  key,
+  data
+) {
+
+  localStorage.setItem(
+    key,
+    JSON.stringify(data)
+  );
+}
+
+
+function getProfile() {
+
+  let profile;
+
+  try {
+    profile =
+      JSON.parse(
+        localStorage.getItem(
+          KEYS.profile
+        )
+      );
+  }
+
+  catch {}
+
+
+  if (!profile) {
+
+    profile = {
+      startWeight: 84,
+      targetWeight: 60,
+      targetDate: "2027-02-28",
+      workoutGoal: 2,
+      startDate: isoToday()
+    };
+
+
+    localStorage.setItem(
+      KEYS.profile,
+      JSON.stringify(profile)
+    );
+  }
+
+
+  return profile;
+}
+
+
+function saveProfile(profile) {
+
+  localStorage.setItem(
+    KEYS.profile,
+    JSON.stringify(profile)
+  );
+}
+
+
+function ensureStartingWeight() {
+
+  const weights =
+    read(KEYS.weights);
+
+
+  if (weights.length) {
+    return;
+  }
+
+
+  const profile =
+    getProfile();
+
+
+  weights.push({
+
+    id: id(),
+
+    date:
+      profile.startDate,
+
+    weight:
+      profile.startWeight,
+
+    baseline:
+      true
+
+  });
+
+
+  write(
+    KEYS.weights,
+    weights
+  );
+}
+
+
+function migrateWorkoutTypes() {
+
+  const workouts =
+    read(KEYS.workouts);
+
+
+  let changed =
+    false;
+
+
+  const updated =
+    workouts.map(
+      workout => {
+
+        if (
+          workout.type === "Burn Pilates" ||
+          workout.type === "Firm Pilates"
+        ) {
+
+          changed =
+            true;
+
+
+          return {
+            ...workout,
+            type:
+              "Burn & Firm Pilates"
+          };
+        }
+
+
+        return workout;
+      }
+    );
+
+
+  if (changed) {
+
+    write(
+      KEYS.workouts,
+      updated
+    );
+
+  }
+}
+
+
+const titles = {
+
+  dashboard:
+    "Your progress dashboard",
+
+  workout:
+    "Workout log",
+
+  nutrition:
+    "Nutrition check-in",
+
+  weight:
+    "Weight progress"
+
+};
+
+
+function showView(name) {
+
+  document
+    .querySelectorAll(
+      ".view"
+    )
+    .forEach(
+      view =>
+        view.classList.remove(
+          "active"
+        )
+    );
+
+
+  document
+    .querySelectorAll(
+      ".nav"
+    )
+    .forEach(
+      button =>
+        button.classList.remove(
+          "active"
+        )
+    );
+
+
+  document
+    .getElementById(
+      name + "View"
+    )
+    .classList.add(
+      "active"
+    );
+
+
+  document
+    .querySelector(
+      `[data-view="${name}"]`
+    )
+    .classList.add(
+      "active"
+    );
+
+
+  document
+    .getElementById(
+      "headerTitle"
+    )
+    .textContent =
+      titles[name];
+
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+}
+
+
+document
+  .querySelectorAll(
+    ".nav"
+  )
+  .forEach(
+    button => {
+
+      button.addEventListener(
+        "click",
+        () =>
+          showView(
+            button.dataset.view
+          )
+      );
+
+    }
+  );
+
+
+function sortedWeights() {
+
+  return read(
+    KEYS.weights
+  )
+  .slice()
+  .sort(
+    (a, b) =>
+      parseDate(a.date) -
+      parseDate(b.date)
+  );
+}
+
+
+function latestWeight() {
+
+  const weights =
+    sortedWeights();
+
+
+  return weights.length
+    ? Number(
+        weights[
+          weights.length - 1
+        ].weight
+      )
+    : getProfile().startWeight;
+}
+
+
+function thisWeeks(items) {
+
+  const start =
+    mondayOfCurrentWeek();
+
+
+  const end =
+    new Date(start);
+
+
+  end.setDate(
+    end.getDate() + 6
+  );
+
+
+  return items.filter(
+    item => {
+
+      const date =
+        parseDate(
+          item.date
+        );
+
+
+      return (
+        date >= start &&
+        date <= end
+      );
+    }
+  );
+}
+
+
+function renderDashboard() {
+
+  const profile =
+    getProfile();
+
+
+  const current =
+    latestWeight();
+
+
+  const start =
+    Number(
+      profile.startWeight
+    );
+
+
+  const target =
+    Number(
+      profile.targetWeight
+    );
+
+
+  const totalGoal =
+    start - target;
+
+
+  const lost =
+    start - current;
+
+
+  const remaining =
+    Math.max(
+      0,
+      current - target
+    );
+
+
+  let percent =
+    totalGoal > 0
+      ? (
+          lost /
+          totalGoal
+        ) * 100
+      : 0;
+
+
+  percent =
+    Math.max(
+      0,
+      Math.min(
+        100,
+        percent
+      )
+    );
+
+
+  document
+    .getElementById(
+      "currentWeight"
+    )
+    .textContent =
+      current
+        .toFixed(1)
+        .replace(
+          ".0",
+          ""
+        );
+
+
+  document
+    .getElementById(
+      "remainingWeight"
+    )
+    .textContent =
+      remaining
+        .toFixed(1)
+        .replace(
+          ".0",
+          ""
+        );
+
+
+  document
+    .getElementById(
+      "goalProgress"
+    )
+    .style.width =
+      `${percent}%`;
+
+
+  document
+    .getElementById(
+      "progressCaption"
+    )
+    .textContent =
+      `${Math.round(percent)}% toward goal`;
+
+
+  document
+    .getElementById(
+      "weightChangeText"
+    )
+    .textContent =
+      lost > 0
+
+        ? `${lost.toFixed(1)} kg below your starting weight`
+
+        : lost < 0
+
+          ? `${Math.abs(lost).toFixed(1)} kg above your starting weight`
+
+          : "Starting point";
+
+
+  document
+    .getElementById(
+      "heroGoal"
+    )
+    .textContent =
+      `Goal ${target} kg`;
+
+
+  document
+    .getElementById(
+      "goalPill"
+    )
+    .textContent =
+      `Goal · ${target} kg`;
+
+
+  document
+    .getElementById(
+      "workoutGoal"
+    )
+    .textContent =
+      profile.workoutGoal;
+
+
+  const workouts =
+    thisWeeks(
+      read(
+        KEYS.workouts
+      )
+    );
+
+
+  document
+    .getElementById(
+      "weeklyWorkouts"
+    )
+    .textContent =
+      workouts.length;
+
+
+  document
+    .getElementById(
+      "weeklyMinutes"
+    )
+    .textContent =
+      workouts.reduce(
+        (
+          total,
+          workout
+        ) =>
+          total +
+          Number(
+            workout.duration || 0
+          ),
+        0
+      );
+
+
+  document
+    .getElementById(
+      "nutritionCheckins"
+    )
+    .textContent =
+      thisWeeks(
+        read(
+          KEYS.nutrition
+        )
+      ).length;
+
+
+  document
+    .getElementById(
+      "trxStatus"
+    )
+    .textContent =
+      workouts.some(
+        workout =>
+          workout.type ===
+          "TRX / small-group training"
+      )
+        ? "Logged ✓"
+        : "Not logged";
+
+
+  document
+    .getElementById(
+      "pilatesStatus"
+    )
+    .textContent =
+      workouts.some(
+        workout =>
+          workout.type ===
+          "Burn & Firm Pilates"
+      )
+        ? "Logged ✓"
+        : "Not logged";
+
+
+  const targetDate =
+    parseDate(
+      profile.targetDate
+    );
+
+
+  document
+    .getElementById(
+      "targetDateHeader"
+    )
+    .textContent =
+      "Target · " +
+      new Intl.DateTimeFormat(
+        undefined,
+        {
+          month: "short",
+          year: "numeric"
+        }
+      )
+      .format(
+        targetDate
+      );
+
+
+  renderWeightChart();
+
+  renderNutritionSummary();
+}
+
+
+function renderWeightChart() {
+
+  const svg =
+    document.getElementById(
+      "weightChart"
+    );
+
+
+  const weights =
+    sortedWeights();
+
+
+  const profile =
+    getProfile();
+
+
+  const width =
+    760;
+
+  const height =
+    300;
+
+
+  const margin = {
+    left: 52,
+    right: 30,
+    top: 25,
+    bottom: 45
+  };
+
+
+  const plotWidth =
+    width -
+    margin.left -
+    margin.right;
+
+
+  const plotHeight =
+    height -
+    margin.top -
+    margin.bottom;
+
+
+  const values =
+    weights.map(
+      entry =>
+        Number(
+          entry.weight
+        )
+    );
+
+
+  values.push(
+    Number(
+      profile.targetWeight
+    )
+  );
+
+
+  values.push(
+    Number(
+      profile.startWeight
+    )
+  );
+
+
+  let max =
+    Math.ceil(
+      Math.max(
+        ...values
+      ) + 2
+    );
+
+
+  let min =
+    Math.floor(
+      Math.min(
+        ...values
+      ) - 2
+    );
+
+
+  if (
+    max - min < 10
+  ) {
+    max += 5;
+    min -= 5;
+  }
+
+
+  const y =
+    value =>
+      margin.top +
+      (
+        (
+          max - value
+        ) /
+        (
+          max - min
+        )
+      ) *
+      plotHeight;
+
+
+  const x =
+    index =>
+      weights.length <= 1
+        ? margin.left
+        : margin.left +
+          (
+            index /
+            (
+              weights.length - 1
+            )
+          ) *
+          plotWidth;
+
+
+  let html =
+    "";
+
+
+  for (
+    let i = 0;
+    i <= 5;
+    i++
+  ) {
+
+    const value =
+      min +
+      (
+        (
+          max - min
+        ) /
+        5
+      ) *
+      i;
+
+
+    const yy =
+      y(value);
+
+
+    html += `
+      <line
+        x1="${margin.left}"
+        y1="${yy}"
+        x2="${width - margin.right}"
+        y2="${yy}"
+        stroke="#dfe7e5"
+      />
+
+      <text
+        x="${margin.left - 9}"
+        y="${yy + 4}"
+        text-anchor="end"
+        font-size="11"
+        fill="#718385"
+      >
+        ${value.toFixed(0)}
+      </text>
+    `;
+  }
+
+
+  const targetY =
+    y(
+      Number(
+        profile.targetWeight
+      )
+    );
+
+
+  html += `
+    <line
+      x1="${margin.left}"
+      y1="${targetY}"
+      x2="${width - margin.right}"
+      y2="${targetY}"
+      stroke="#2f705b"
+      stroke-width="2"
+      stroke-dasharray="7 6"
+    />
+
+    <text
+      x="${width - margin.right}"
+      y="${targetY - 7}"
+      text-anchor="end"
+      font-size="11"
+      fill="#2f705b"
+    >
+      Goal ${profile.targetWeight} kg
+    </text>
+  `;
+
+
+  if (
+    weights.length
+  ) {
+
+    const points =
+      weights
+        .map(
+          (
+            entry,
+            index
+          ) =>
+            `${x(index)},${y(
+              Number(
+                entry.weight
+              )
+            )}`
+        )
+        .join(" ");
+
+
+    html += `
+      <polyline
+        points="${points}"
+        fill="none"
+        stroke="#337f92"
+        stroke-width="3"
+        stroke-linejoin="round"
+        stroke-linecap="round"
+      />
+    `;
+
+
+    weights.forEach(
+      (
+        entry,
+        index
+      ) => {
+
+        html += `
+          <circle
+            cx="${x(index)}"
+            cy="${y(
+              Number(
+                entry.weight
+              )
+            )}"
+            r="5"
+            fill="#fff"
+            stroke="#337f92"
+            stroke-width="3"
+          >
+            <title>
+              ${formatDate(entry.date)}: ${entry.weight} kg
+            </title>
+          </circle>
+        `;
+
+      }
+    );
+
+  }
+
+
+  svg.innerHTML =
+    html;
+}
+
+
+function renderNutritionSummary() {
+
+  const box =
+    document.getElementById(
+      "nutritionSummary"
+    );
+
+
+  const entries =
+    read(
+      KEYS.nutrition
+    )
+    .slice()
+    .sort(
+      (
+        a,
+        b
+      ) =>
+        parseDate(b.date) -
+        parseDate(a.date)
+    )
+    .slice(
+      0,
+      7
+    );
+
+
+  if (
+    !entries.length
+  ) {
+
+    box.innerHTML = `
+      <div class="nutrition-summary-row">
+        <strong>
+          No check-ins yet
+        </strong>
+
+        <span>
+          Use the Nutrition tab only when it feels useful.
+        </span>
+      </div>
+    `;
+
+    return;
+  }
+
+
+  const rhythmCounts =
+    {};
+
+
+  entries.forEach(
+    entry => {
+
+      rhythmCounts[
+        entry.rhythm
+      ] =
+        (
+          rhythmCounts[
+            entry.rhythm
+          ] || 0
+        ) + 1;
+
+    }
+  );
+
+
+  const common =
+    Object.entries(
+      rhythmCounts
+    )
+    .sort(
+      (
+        a,
+        b
+      ) =>
+        b[1] - a[1]
+    )[0]?.[0] ||
+    "—";
+
+
+  box.innerHTML = `
+    <div class="nutrition-summary-row">
+
+      <strong>
+        ${entries.length}
+        recent check-in${entries.length === 1 ? "" : "s"}
+      </strong>
+
+      <span>
+        No streak or completion target is attached to this.
+      </span>
+
+    </div>
+
+    <div class="nutrition-summary-row">
+
+      <strong>
+        Most commonly logged eating rhythm
+      </strong>
+
+      <span>
+        ${escapeHTML(common)}
+      </span>
+
+    </div>
+  `;
+}
+
+
+function resetWorkoutForm() {
+
+  workoutEditingId =
+    null;
+
+
+  document
+    .getElementById(
+      "workoutForm"
+    )
+    .reset();
+
+
+  document
+    .getElementById(
+      "workoutDate"
+    )
+    .value =
+      isoToday();
+
+
+  document
+    .getElementById(
+      "workoutFormTitle"
+    )
+    .textContent =
+      "Log a workout";
+
+
+  document
+    .getElementById(
+      "workoutSave"
+    )
+    .textContent =
+      "Save workout";
+
+
+  document
+    .getElementById(
+      "cancelWorkoutEdit"
+    )
+    .style.display =
+      "none";
+}
+
+
+document
+  .getElementById(
+    "workoutForm"
+  )
+  .addEventListener(
+    "submit",
+    event => {
+
+      event.preventDefault();
+
+
+      const date =
+        document
+          .getElementById(
+            "workoutDate"
+          )
+          .value;
+
+
+      const type =
+        document
+          .getElementById(
+            "workoutType"
+          )
+          .value;
+
+
+      const duration =
+        Number(
+          document
+            .getElementById(
+              "duration"
+            )
+            .value
+        );
+
+
+      const effort =
+        document.querySelector(
+          'input[name="effort"]:checked'
+        );
+
+
+      const notes =
+        document
+          .getElementById(
+            "workoutNotes"
+          )
+          .value
+          .trim();
+
+
+      if (
+        !date ||
+        !type ||
+        !duration ||
+        !effort
+      ) {
+
+        toast(
+          "Complete the required workout fields."
+        );
+
+        return;
+      }
+
+
+      let workouts =
+        read(
+          KEYS.workouts
+        );
+
+
+      if (
+        workoutEditingId
+      ) {
+
+        workouts =
+          workouts.map(
+            workout =>
+              workout.id ===
+              workoutEditingId
+
+                ? {
+                    ...workout,
+                    date,
+                    type,
+                    duration,
+                    effort:
+                      Number(
+                        effort.value
+                      ),
+                    notes
+                  }
+
+                : workout
+          );
+
+
+        toast(
+          "Workout updated."
+        );
+
+      }
+
+      else {
+
+        workouts.push({
+
+          id: id(),
+
+          date,
+
+          type,
+
+          duration,
+
+          effort:
+            Number(
+              effort.value
+            ),
+
+          notes,
+
+          createdAt:
+            Date.now()
+
+        });
+
+
+        toast(
+          "Workout saved."
+        );
+
+      }
+
+
+      write(
+        KEYS.workouts,
+        workouts
+      );
+
+
+      resetWorkoutForm();
+
+      renderAll();
+
+      showView(
+        "dashboard"
+      );
+
+    }
+  );
+
+
+document
+  .getElementById(
+    "cancelWorkoutEdit"
+  )
+  .addEventListener(
+    "click",
+    resetWorkoutForm
+  );
+
+
+function renderWorkoutHistory() {
+
+  const workouts =
+    read(
+      KEYS.workouts
+    )
+    .slice()
+    .sort(
+      (
+        a,
+        b
+      ) =>
+        parseDate(b.date) -
+        parseDate(a.date)
+    );
+
+
+  const box =
+    document.getElementById(
+      "workoutHistory"
+    );
+
+
+  if (
+    !workouts.length
+  ) {
+
+    box.innerHTML = `
+      <div class="card empty">
+
+        <h3>
+          No workouts logged
+        </h3>
+
+        <p>
+          Your TRX and Burn & Firm Pilates
+          sessions will appear here.
+        </p>
+
+      </div>
+    `;
+
+    return;
+  }
+
+
+  box.innerHTML =
+    workouts.map(
+      workout => `
+
+        <article class="card item">
+
+          <div class="item-top">
+
+            <div>
+
+              <div class="item-date">
+                ${formatDate(workout.date)}
+              </div>
+
+              <div class="item-title">
+                ${escapeHTML(workout.type)}
+              </div>
+
+            </div>
+
+
+            <div class="item-badge">
+              Effort ${workout.effort}/5
+            </div>
+
+          </div>
+
+
+          <div class="item-meta">
+            <span>
+              ${workout.duration} minutes
+            </span>
+          </div>
+
+
+          ${
+            workout.notes
+
+              ? `
+                <p class="item-notes">
+                  ${escapeHTML(workout.notes)}
+                </p>
+              `
+
+              : ""
+          }
+
+
+          <div class="item-actions">
+
+            <button
+              class="secondary small"
+              data-workout-edit="${workout.id}"
+            >
+              Edit
+            </button>
+
+            <button
+              class="delete small"
+              data-workout-delete="${workout.id}"
+            >
+              Delete
+            </button>
+
+          </div>
+
+        </article>
+      `
+    )
+    .join("");
+}
+
+
+document
+  .getElementById(
+    "workoutHistory"
+  )
+  .addEventListener(
+    "click",
+    event => {
+
+      const edit =
+        event.target.closest(
+          "[data-workout-edit]"
+        );
+
+
+      const remove =
+        event.target.closest(
+          "[data-workout-delete]"
+        );
+
+
+      if (edit) {
+
+        editWorkout(
+          edit.dataset.workoutEdit
+        );
+
+      }
+
+
+      if (remove) {
+
+        deleteWorkout(
+          remove.dataset.workoutDelete
+        );
+
+      }
+
+    }
+  );
+
+
+function editWorkout(
+  workoutId
+) {
+
+  const workout =
+    read(
+      KEYS.workouts
+    )
+    .find(
+      item =>
+        item.id ===
+        workoutId
+    );
+
+
+  if (!workout) {
+    return;
+  }
+
+
+  workoutEditingId =
+    workoutId;
+
+
+  document
+    .getElementById(
+      "workoutDate"
+    )
+    .value =
+      workout.date;
+
+
+  document
+    .getElementById(
+      "workoutType"
+    )
+    .value =
+      workout.type;
+
+
+  document
+    .getElementById(
+      "duration"
+    )
+    .value =
+      workout.duration;
+
+
+  document
+    .getElementById(
+      "workoutNotes"
+    )
+    .value =
+      workout.notes || "";
+
+
+  const effort =
+    document
+      .getElementById(
+        "e" +
+        workout.effort
+      );
+
+
+  if (effort) {
+
+    effort.checked =
+      true;
+
+  }
+
+
+  document
+    .getElementById(
+      "workoutFormTitle"
+    )
+    .textContent =
+      "Edit workout";
+
+
+  document
+    .getElementById(
+      "workoutSave"
+    )
+    .textContent =
+      "Update workout";
+
+
+  document
+    .getElementById(
+      "cancelWorkoutEdit"
+    )
+    .style.display =
+      "inline-block";
+
+
+  showView(
+    "workout"
+  );
+}
+
+
+function deleteWorkout(
+  workoutId
+) {
+
+  const workouts =
+    read(
+      KEYS.workouts
+    );
+
+
+  const workout =
+    workouts.find(
+      item =>
+        item.id ===
+        workoutId
+    );
+
+
+  if (
+    !workout ||
+    !confirm(
+      `Delete ${workout.type} from ${formatDate(workout.date)}?`
+    )
+  ) {
+    return;
+  }
+
+
+  write(
+    KEYS.workouts,
+    workouts.filter(
+      item =>
+        item.id !==
+        workoutId
+    )
+  );
+
+
+  toast(
+    "Workout deleted."
+  );
+
+
+  renderAll();
+}
+
+
+function selectedPatterns() {
+
+  return [
+    "hydration",
+    "protein",
+    "produce",
+    "workoutFuel"
+  ]
+  .filter(
+    key =>
+      document
+        .getElementById(
+          key
+        )
+        .checked
+  )
+  .map(
+    key =>
+      document
+        .getElementById(
+          key
+        )
+        .value
+  );
+}
+
+
+function resetNutritionForm() {
+
+  nutritionEditingId =
+    null;
+
+
+  document
+    .getElementById(
+      "nutritionForm"
+    )
+    .reset();
+
+
+  document
+    .getElementById(
+      "nutritionDate"
+    )
+    .value =
+      isoToday();
+
+
+  document
+    .getElementById(
+      "nutritionFormTitle"
+    )
+    .textContent =
+      "Nutrition check-in";
+
+
+  document
+    .getElementById(
+      "nutritionSave"
+    )
+    .textContent =
+      "Save check-in";
+
+
+  document
+    .getElementById(
+      "cancelNutritionEdit"
+    )
+    .style.display =
+      "none";
+}
+
+
+document
+  .getElementById(
+    "nutritionForm"
+  )
+  .addEventListener(
+    "submit",
+    event => {
+
+      event.preventDefault();
+
+
+      const date =
+        document
+          .getElementById(
+            "nutritionDate"
+          )
+          .value;
+
+
+      const rhythm =
+        document
+          .getElementById(
+            "mealRhythm"
+          )
+          .value;
+
+
+      const energy =
+        document
+          .getElementById(
+            "energyLevel"
+          )
+          .value;
+
+
+      const patterns =
+        selectedPatterns();
+
+
+      const notes =
+        document
+          .getElementById(
+            "nutritionNotes"
+          )
+          .value
+          .trim();
+
+
+      if (
+        !date ||
+        !rhythm ||
+        !energy
+      ) {
+
+        toast(
+          "Complete the nutrition check-in fields."
+        );
+
+        return;
+      }
+
+
+      let entries =
+        read(
+          KEYS.nutrition
+        );
+
+
+      const duplicate =
+        entries.find(
+          item =>
+            item.date === date &&
+            item.id !== nutritionEditingId
+        );
+
+
+      if (
+        duplicate &&
+        !confirm(
+          "A nutrition check-in already exists for this date. Save another one anyway?"
+        )
+      ) {
+        return;
+      }
+
+
+      if (
+        nutritionEditingId
+      ) {
+
+        entries =
+          entries.map(
+            item =>
+              item.id ===
+              nutritionEditingId
+
+                ? {
+                    ...item,
+                    date,
+                    rhythm,
+                    energy,
+                    patterns,
+                    notes
+                  }
+
+                : item
+          );
+
+
+        toast(
+          "Nutrition check-in updated."
+        );
+
+      }
+
+      else {
+
+        entries.push({
+
+          id: id(),
+
+          date,
+
+          rhythm,
+
+          energy,
+
+          patterns,
+
+          notes,
+
+          createdAt:
+            Date.now()
+
+        });
+
+
+        toast(
+          "Nutrition check-in saved."
+        );
+
+      }
+
+
+      write(
+        KEYS.nutrition,
+        entries
+      );
+
+
+      resetNutritionForm();
+
+      renderAll();
+
+    }
+  );
+
+
+document
+  .getElementById(
+    "cancelNutritionEdit"
+  )
+  .addEventListener(
+    "click",
+    resetNutritionForm
+  );
+
+
+function renderNutritionHistory() {
+
+  const entries =
+    read(
+      KEYS.nutrition
+    )
+    .slice()
+    .sort(
+      (
+        a,
+        b
+      ) =>
+        parseDate(b.date) -
+        parseDate(a.date)
+    );
+
+
+  const box =
+    document.getElementById(
+      "nutritionHistory"
+    );
+
+
+  if (
+    !entries.length
+  ) {
+
+    box.innerHTML = `
+      <div class="card empty">
+
+        <h3>
+          No nutrition check-ins
+        </h3>
+
+        <p>
+          This tracker is optional and intentionally
+          does not ask you to record every meal.
+        </p>
+
+      </div>
+    `;
+
+    return;
+  }
+
+
+  box.innerHTML =
+    entries.map(
+      entry => `
+
+        <article class="card item">
+
+          <div class="item-top">
+
+            <div>
+
+              <div class="item-date">
+                ${formatDate(entry.date)}
+              </div>
+
+              <div class="item-title">
+                ${escapeHTML(entry.rhythm)}
+              </div>
+
+            </div>
+
+
+            <div class="item-badge">
+              ${escapeHTML(entry.energy)} energy
+            </div>
+
+          </div>
+
+
+          ${
+            entry.patterns?.length
+
+              ? `
+                <div class="tag-wrap">
+
+                  ${
+                    entry.patterns
+                      .map(
+                        pattern =>
+                          `
+                            <span class="tag">
+                              ${escapeHTML(pattern)}
+                            </span>
+                          `
+                      )
+                      .join("")
+                  }
+
+                </div>
+              `
+
+              : ""
+          }
+
+
+          ${
+            entry.notes
+
+              ? `
+                <p class="item-notes">
+                  ${escapeHTML(entry.notes)}
+                </p>
+              `
+
+              : ""
+          }
+
+
+          <div class="item-actions">
+
+            <button
+              class="secondary small"
+              data-nutrition-edit="${entry.id}"
+            >
+              Edit
+            </button>
+
+            <button
+              class="delete small"
+              data-nutrition-delete="${entry.id}"
+            >
+              Delete
+            </button>
+
+          </div>
+
+        </article>
+      `
+    )
+    .join("");
+}
+
+
+document
+  .getElementById(
+    "nutritionHistory"
+  )
+  .addEventListener(
+    "click",
+    event => {
+
+      const edit =
+        event.target.closest(
+          "[data-nutrition-edit]"
+        );
+
+
+      const remove =
+        event.target.closest(
+          "[data-nutrition-delete]"
+        );
+
+
+      if (edit) {
+
+        editNutrition(
+          edit.dataset.nutritionEdit
+        );
+
+      }
+
+
+      if (remove) {
+
+        deleteNutrition(
+          remove.dataset.nutritionDelete
+        );
+
+      }
+
+    }
+  );
+
+
+function editNutrition(
+  nutritionId
+) {
+
+  const entry =
+    read(
+      KEYS.nutrition
+    )
+    .find(
+      item =>
+        item.id ===
+        nutritionId
+    );
+
+
+  if (!entry) {
+    return;
+  }
+
+
+  nutritionEditingId =
+    nutritionId;
+
+
+  document
+    .getElementById(
+      "nutritionDate"
+    )
+    .value =
+      entry.date;
+
+
+  document
+    .getElementById(
+      "mealRhythm"
+    )
+    .value =
+      entry.rhythm;
+
+
+  document
+    .getElementById(
+      "energyLevel"
+    )
+    .value =
+      entry.energy;
+
+
+  document
+    .getElementById(
+      "nutritionNotes"
+    )
+    .value =
+      entry.notes || "";
+
+
+  [
+    "hydration",
+    "protein",
+    "produce",
+    "workoutFuel"
+  ]
+  .forEach(
+    key => {
+
+      const checkbox =
+        document
+          .getElementById(
+            key
+          );
+
+
+      checkbox.checked =
+        (
+          entry.patterns || []
+        )
+        .includes(
+          checkbox.value
+        );
+
+    }
+  );
+
+
+  document
+    .getElementById(
+      "nutritionFormTitle"
+    )
+    .textContent =
+      "Edit nutrition check-in";
+
+
+  document
+    .getElementById(
+      "nutritionSave"
+    )
+    .textContent =
+      "Update check-in";
+
+
+  document
+    .getElementById(
+      "cancelNutritionEdit"
+    )
+    .style.display =
+      "inline-block";
+
+
+  showView(
+    "nutrition"
+  );
+}
+
+
+function deleteNutrition(
+  nutritionId
+) {
+
+  const entries =
+    read(
+      KEYS.nutrition
+    );
+
+
+  const entry =
+    entries.find(
+      item =>
+        item.id ===
+        nutritionId
+    );
+
+
+  if (
+    !entry ||
+    !confirm(
+      `Delete the nutrition check-in from ${formatDate(entry.date)}?`
+    )
+  ) {
+    return;
+  }
+
+
+  write(
+    KEYS.nutrition,
+    entries.filter(
+      item =>
+        item.id !==
+        nutritionId
+    )
+  );
+
+
+  toast(
+    "Nutrition check-in deleted."
+  );
+
+
+  renderAll();
+}
+
+
+function resetWeightForm() {
+
+  weightEditingId =
+    null;
+
+
+  document
+    .getElementById(
+      "weightForm"
+    )
+    .reset();
+
+
+  document
+    .getElementById(
+      "weightDate"
+    )
+    .value =
+      isoToday();
+
+
+  document
+    .getElementById(
+      "weightValue"
+    )
+    .value =
+      latestWeight();
+
+
+  document
+    .getElementById(
+      "weightFormTitle"
+    )
+    .textContent =
+      "Weight progress";
+
+
+  document
+    .getElementById(
+      "weightSave"
+    )
+    .textContent =
+      "Save weigh-in";
+
+
+  document
+    .getElementById(
+      "cancelWeightEdit"
+    )
+    .style.display =
+      "none";
+}
+
+
+document
+  .getElementById(
+    "weightForm"
+  )
+  .addEventListener(
+    "submit",
+    event => {
+
+      event.preventDefault();
+
+
+      const date =
+        document
+          .getElementById(
+            "weightDate"
+          )
+          .value;
+
+
+      const weight =
+        Number(
+          document
+            .getElementById(
+              "weightValue"
+            )
+            .value
+        );
+
+
+      if (
+        !date ||
+        !weight
+      ) {
+
+        toast(
+          "Enter a valid weight."
+        );
+
+        return;
+      }
+
+
+      let weights =
+        read(
+          KEYS.weights
+        );
+
+
+      if (
+        weightEditingId
+      ) {
+
+        weights =
+          weights.map(
+            item =>
+              item.id ===
+              weightEditingId
+
+                ? {
+                    ...item,
+                    date,
+                    weight
+                  }
+
+                : item
+          );
+
+
+        toast(
+          "Weigh-in updated."
+        );
+
+      }
+
+      else {
+
+        weights.push({
+
+          id: id(),
+
+          date,
+
+          weight
+
+        });
+
+
+        toast(
+          "Weigh-in saved."
+        );
+
+      }
+
+
+      write(
+        KEYS.weights,
+        weights
+      );
+
+
+      resetWeightForm();
+
+      renderAll();
+
+    }
+  );
+
+
+document
+  .getElementById(
+    "cancelWeightEdit"
+  )
+  .addEventListener(
+    "click",
+    resetWeightForm
+  );
+
+
+function renderWeightHistory() {
+
+  const weights =
+    sortedWeights()
+      .slice()
+      .reverse();
+
+
+  const box =
+    document.getElementById(
+      "weightHistory"
+    );
+
+
+  box.innerHTML =
+    weights.map(
+      entry => `
+
+        <article class="card item">
+
+          <div class="item-top">
+
+            <div>
+
+              <div class="item-date">
+                ${formatDate(entry.date)}
+              </div>
+
+              <div class="item-title">
+                ${Number(entry.weight).toFixed(1)} kg
+              </div>
+
+            </div>
+
+
+            ${
+              entry.baseline
+
+                ? `
+                  <div class="item-badge">
+                    Starting weight
+                  </div>
+                `
+
+                : ""
+            }
+
+          </div>
+
+
+          <div class="item-actions">
+
+            <button
+              class="secondary small"
+              data-weight-edit="${entry.id}"
+            >
+              Edit
+            </button>
+
+
+            ${
+              entry.baseline
+
+                ? ""
+
+                : `
+                  <button
+                    class="delete small"
+                    data-weight-delete="${entry.id}"
+                  >
+                    Delete
+                  </button>
+                `
+            }
+
+          </div>
+
+        </article>
+      `
+    )
+    .join("");
+}
+
+
+document
+  .getElementById(
+    "weightHistory"
+  )
+  .addEventListener(
+    "click",
+    event => {
+
+      const edit =
+        event.target.closest(
+          "[data-weight-edit]"
+        );
+
+
+      const remove =
+        event.target.closest(
+          "[data-weight-delete]"
+        );
+
+
+      if (edit) {
+
+        editWeight(
+          edit.dataset.weightEdit
+        );
+
+      }
+
+
+      if (remove) {
+
+        deleteWeight(
+          remove.dataset.weightDelete
+        );
+
+      }
+
+    }
+  );
+
+
+function editWeight(
+  weightId
+) {
+
+  const entry =
+    read(
+      KEYS.weights
+    )
+    .find(
+      item =>
+        item.id ===
+        weightId
+    );
+
+
+  if (!entry) {
+    return;
+  }
+
+
+  weightEditingId =
+    weightId;
+
+
+  document
+    .getElementById(
+      "weightDate"
+    )
+    .value =
+      entry.date;
+
+
+  document
+    .getElementById(
+      "weightValue"
+    )
+    .value =
+      entry.weight;
+
+
+  document
+    .getElementById(
+      "weightFormTitle"
+    )
+    .textContent =
+      "Edit weigh-in";
+
+
+  document
+    .getElementById(
+      "weightSave"
+    )
+    .textContent =
+      "Update weigh-in";
+
+
+  document
+    .getElementById(
+      "cancelWeightEdit"
+    )
+    .style.display =
+      "inline-block";
+
+
+  showView(
+    "weight"
+  );
+}
+
+
+function deleteWeight(
+  weightId
+) {
+
+  const weights =
+    read(
+      KEYS.weights
+    );
+
+
+  const entry =
+    weights.find(
+      item =>
+        item.id ===
+        weightId
+    );
+
+
+  if (
+    !entry ||
+    !confirm(
+      `Delete the ${entry.weight} kg weigh-in from ${formatDate(entry.date)}?`
+    )
+  ) {
+    return;
+  }
+
+
+  write(
+    KEYS.weights,
+    weights.filter(
+      item =>
+        item.id !==
+        weightId
+    )
+  );
+
+
+  toast(
+    "Weigh-in deleted."
+  );
+
+
+  resetWeightForm();
+
+  renderAll();
+}
+
+
+function renderGoalForm() {
+
+  const profile =
+    getProfile();
+
+
+  document
+    .getElementById(
+      "targetWeightInput"
+    )
+    .value =
+      profile.targetWeight;
+
+
+  document
+    .getElementById(
+      "targetDateInput"
+    )
+    .value =
+      profile.targetDate;
+
+
+  document
+    .getElementById(
+      "workoutGoalInput"
+    )
+    .value =
+      profile.workoutGoal;
+}
+
+
+document
+  .getElementById(
+    "goalForm"
+  )
+  .addEventListener(
+    "submit",
+    event => {
+
+      event.preventDefault();
+
+
+      const profile =
+        getProfile();
+
+
+      profile.targetWeight =
+        Number(
+          document
+            .getElementById(
+              "targetWeightInput"
+            )
+            .value
+        );
+
+
+      profile.targetDate =
+        document
+          .getElementById(
+            "targetDateInput"
+          )
+          .value;
+
+
+      profile.workoutGoal =
+        Number(
+          document
+            .getElementById(
+              "workoutGoalInput"
+            )
+            .value
+        );
+
+
+      saveProfile(
+        profile
+      );
+
+
+      toast(
+        "Goal updated."
+      );
+
+
+      renderAll();
+
+    }
+  );
+
+
+function escapeHTML(text) {
+
+  const element =
+    document.createElement(
+      "div"
+    );
+
+
+  element.textContent =
+    text ?? "";
+
+
+  return element.innerHTML;
+}
+
+
+let toastTimer;
+
+
+function toast(message) {
+
+  const element =
+    document.getElementById(
+      "toast"
+    );
+
+
+  element.textContent =
+    message;
+
+
+  element.classList.add(
+    "show"
+  );
+
+
+  clearTimeout(
+    toastTimer
+  );
+
+
+  toastTimer =
+    setTimeout(
+      () =>
+        element.classList.remove(
+          "show"
+        ),
+      2200
+    );
+}
+
+
+function renderAll() {
+
+  renderDashboard();
+
+  renderWorkoutHistory();
+
+  renderNutritionHistory();
+
+  renderWeightHistory();
+
+  renderGoalForm();
+}
+
+
+getProfile();
+
+ensureStartingWeight();
+
+migrateWorkoutTypes();
+
+resetWorkoutForm();
+
+resetNutritionForm();
+
+resetWeightForm();
+
+renderAll();
+
+
+window.addEventListener(
+  "storage",
+  renderAll
+);
+</script>
+
+</body>
+</html>
